@@ -11,5 +11,3 @@
 *.lock
 .phpunit*
 /.env.local
-/srv-ctl.sh
-/config/autoload-local/
