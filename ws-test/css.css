@@ -1,0 +1,16 @@
+#ws-return {
+padding:10px;
+}
+.ret-item{
+border-top:2px solid #ccc;
+margin:0;
+}
+.ret-item .reqId{
+background:#FFCC66;
+color:#000000;
+font-weight:bold;
+margin:0;
+}
+.ret-item .data{
+margin:0;
+}

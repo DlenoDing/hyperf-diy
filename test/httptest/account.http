@@ -1,0 +1,14 @@
+### 自动绑定设备到账号
+POST http://{{ip}}:{{http-port}}/account/account/autoBind.do
+Content-Type: application/json
+Client-Device: {{deviceNo}}
+Client-Debug: 1
+
+{
+  "accountId": "h1abc",
+  "account": "h1",
+  "nickname": "",
+  "information": ""
+}
+
+###

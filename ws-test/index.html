@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API-Websocket 开发调试工具</title>
+</head>
+<link rel="stylesheet" type="text/css" href="./css.css"/>
+<script type="text/javascript" src="./jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="./run_prettify.js"></script>
+<script type="text/javascript">
+    var ws = null;
+    var ping = null;
+    var reqId = 0;
+    var reqData = [];
+    var storageHeaders = ['Client-Token'];
+    var localWs = localStorage.getItem('localWs');
+    if (localWs === null || localWs === '') {
+        localWs = 'ws://localhost:9505/';
+    }
+    var env = localStorage.getItem('env');
+    if (env === null || env === '') {
+        env = 'local';
+    }
+    var action = localStorage.getItem('action');
+    if (action === null || action === '') {
+        action = 'test.test.index';
+    }
+    var params = localStorage.getItem('params');
+    if (params === null || params === '') {
+        params = '';
+    }
+    $(document).ready(function () {
+        $('#ws-close').click(function () {
+            if (ws != null) {
+                ws.close();
+                clearInterval(ping);
+            }
+        });
+        $('#ws-connect').click(function () {
+            localStorage.setItem('env', env);
+            if (env === 'local') {
+                localWs = $('#ws-url').val();
+                localStorage.setItem('localWs', localWs);
+            }
+            //主机
+            var url = geturl();
+            ws = new WebSocket(url);
+
+            ws.onopen = function () {
+                //当WebSocket创建成功时，触发onopen事件
+                ping = setInterval(function () {
+                    ws.send(0x09);
+                }, 10000);
+                $('#ws-send').removeAttr('disabled');
+                $('#ws-close').removeAttr('disabled');
+                $('#ws-connect').attr('disabled', true);
+            };
+            ws.onmessage = function (e) {
+                var datas = $.parseJSON(e.data);
+                console.log(datas);
+                var reqId = datas.reqId;
+                var times = reqData[reqId] ? (getTimestamp()-reqData[reqId]['time'])/1000 : 0;
+                // var data = $.stringify(datas.data);
+                // console.log(JSON.parse(datas.data));
+                var data = JSON.stringify(JSON.parse(datas.data),null,2);
+                addRetrunVal(reqId, times, reqData[reqId] ? reqData[reqId]['action'] : '', data);
+                reqData[reqId] = null;
+                PR.prettyPrint();
+            };
+            ws.onclose = function (e) {
+                //当客户端收到服务端发送的关闭连接请求时，触发onclose事件
+                $('#ws-send').attr('disabled', true);
+                $('#ws-close').attr('disabled', true);
+                $('#ws-connect').removeAttr('disabled');
+                clearInterval(ping);
+            };
+            ws.onerror = function (e) {
+                //如果出现连接、处理、接收、发送数据失败的时候触发onerror事件
+                alert('发生错误,请查看console...');
+                console.log(e);
+            };
+        });
+
+        $('#ws-send').click(function () {
+            reqId++;
+            $('#data-reqId').val(reqId);
+            var reqAction = $('#data-action').val();
+            if (reqAction === '') {
+                alert('请求action不能为空');
+            }
+            localStorage.setItem('action', reqAction);
+
+            var reqParams = $('#data-params').val().trim().trim("\r").trim("\n");
+            localStorage.setItem('params', reqParams);
+            if (reqParams !== '') {
+                reqParams = $.parseJSON(reqParams);
+                // reqParams['content'] && (reqParams['content'] = $.stringify(reqParams['content']));
+            }
+            var sendData = {};
+            sendData.reqId = reqId;
+            sendData.action = reqAction;
+            sendData.params = reqParams;
+            console.log(sendData)
+            sendData = $.stringify(sendData);
+            console.log(sendData)
+            reqData[reqId] = [];
+            reqData[reqId]['action'] = reqAction;
+            reqData[reqId]['time'] = getTimestamp();
+            ws.send(sendData);
+        });
+        $('#ws-env-local').click(function(){
+            env = 'local';
+            $('#ws-url').val(localWs);
+        });
+        $('#ws-env-dev').click(function(){
+            env = 'dev';
+            $('#ws-url').val('ws://dev.domain.com:9505/');
+        });
+        $('#ws-env-test').click(function(){
+            env = 'test';
+            $('#ws-url').val('ws://test.domain.com:9505/');
+        });
+        $('#ws-env-pre').click(function(){
+            env = 'pre';
+            $('#ws-url').val('ws://pre.domain.com:9505/');
+        });
+        $('#ws-env-prod').click(function(){
+            env = 'prod';
+            $('#ws-url').val('ws://www.domain.com:9505/');
+        });
+
+        $('#data-action').val(action);
+        $('#data-params').val(params);
+        $('#ws-env-'+env).click();
+        for (var i=0; i<storageHeaders.length; i++) {
+            var name = storageHeaders[i];
+            var val = localStorage.getItem(name);
+            if (val != null && val !== '') {
+                $('.wh input[name="'+name+'"]').val(val);
+            }
+        }
+    });
+
+    jQuery.extend({
+        stringify  : function stringify(obj) {
+            var t = typeof (obj);
+            if (t != "object" || obj === null) {
+                // simple data type
+                if (t == "string") obj = '"' + obj + '"';
+                return String(obj);
+            } else {
+                // recurse array or object
+                var n, v, json = [], arr = (obj && obj.constructor == Array);
+
+                for (n in obj) {
+                    v = obj[n];
+                    t = typeof(v);
+                    if (obj.hasOwnProperty(n)) {
+                        if (t == "string") v = '"' + v + '"';
+                        else if (t == "object" && v !== null) v = jQuery.stringify(v);
+                        json.push((arr ? "" : '"' + n + '":') + String(v));
+                    }
+                }
+                return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");
+            }
+        }
+    });
+
+    function addRetrunVal(reqId, times, action, data) {
+        $('#ws-return').prepend('<div class="ret-item"><div class="reqId">reqId:' + reqId + '; action:['+action+']; times:('+times+'s)</div><div class="data"><pre class="prettyprint">' + data + '</pre></div></div>');
+    }
+
+    function getQueryWithHeaders() {
+        var query = '';
+        $('.wh input[name*="Client-"]').each(function (i) {
+            query += '&' + $(this).attr("name") + '=' + encodeURIComponent($(this).val());
+            if (storageHeaders.indexOf($(this).attr("name")) >= 0) {
+                localStorage.setItem($(this).attr("name"), $(this).val());
+            }
+        });
+        if (query !== '') {
+            query = query.substr(1);
+        }
+        return query;
+    }
+
+    function geturl() {
+        var url = $('#ws-url').val();
+        if (url !== '' && url.substr(url.length - 1, 1) !== '?') {
+            if (url.substr(url.length - 1, 1) !== '/') {
+                url += '/';
+            }
+            url += '?';
+        }
+        query = getQueryWithHeaders(url);
+        url += query;
+        return url;
+    }
+    function getTimestamp() {
+        return (new Date()).getTime();
+    }
+
+</script>
+<body>
+<table width="60%" border="0" align="center" cellpadding="1" cellspacing="1" bgcolor="#999999">
+    <tr>
+        <th width="13%" height="30" bgcolor="#FFFFFF" scope="row">Host:</th>
+        <td colspan="2" bgcolor="#FFFFFF">
+            <input id="ws-url" type="text" value="ws://dev.domain.com:9504/" size="50">
+            <input id='ws-env-local' type="button" value="Local">
+            <input id='ws-env-dev' type="button" value="Dev">
+            <input id='ws-env-test' type="button" value="Test">
+            <input id='ws-env-pre' type="button" value="Pre">
+            <input id='ws-env-prod' type="button" value="Prod">
+        </td>
+    </tr>
+    <tr>
+        <th bgcolor="#FFFFFF" scope="row">Headers：</th>
+        <td bgcolor="#FFFFFF">
+            <div align="right">Client-Token：</div>        </td>
+        <td bgcolor="#FFFFFF">
+            <span class="wh">
+                <input type="hidden" name="Client-Debug" value="1">
+            </span> <span class="wh">
+        <input type="text" name="Client-Token" size="30" value="">
+            </span>登录Token</td>
+    </tr>
+
+    <tr>
+        <th height="30" colspan="3" bgcolor="#FFFFFF" scope="row">
+            <input type="button" id="ws-connect" value="Connect Host">
+            <input type="button" id="ws-close" value="Close Host" disabled></th>
+    </tr>
+    <tr>
+        <th rowspan="3" bgcolor="#FFFFFF" scope="row">请求数据：</th>
+        <td width="18%" bgcolor="#FFFFFF">
+            <div align="right">reqId：</div>        </td>
+        <td bgcolor="#FFFFFF"><input type="text" id="data-reqId" size="20" readonly> 请求号（自动生成）</td>
+    </tr>
+    <tr>
+        <td bgcolor="#FFFFFF">
+            <div align="right">action：</div>        </td>
+        <td bgcolor="#FFFFFF"><input type="text" id="data-action" size="30" value="test.test.index"> 路由地址</td>
+    </tr>
+    <tr>
+        <td bgcolor="#FFFFFF">
+            <div align="right">params：</div>        </td>
+        <td bgcolor="#FFFFFF"><textarea cols="60" rows="10" id="data-params">{
+	"a1": "v1",
+	"a2": "v2"
+}</textarea> 提交数据</td>
+    </tr>
+    <tr>
+        <th height="30" colspan="3" bgcolor="#FFFFFF" scope="row">
+            <input id='ws-send' type="button" value="Send Data" disabled></th>
+    </tr>
+    <tr>
+        <th bgcolor="#FFFFFF" scope="row">返回数据：</th>
+        <td colspan="2" bgcolor="#FFFFFF">
+            <div id='ws-return'></div>        </td>
+    </tr>
+</table>
+</body>
+</html>
