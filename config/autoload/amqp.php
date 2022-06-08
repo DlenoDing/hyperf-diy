@@ -32,12 +32,12 @@ return [
 
     'consumer' => value(//消费进程专用
         function ($poolName = 'consumer') {
-            $params              = Dleno\CommonCore\Db\AmqpDbConfig::getParams($poolName);
+            $params                      = Dleno\CommonCore\Db\AmqpDbConfig::getParams($poolName);
             $params['max_idle_channels'] = 1;
-            $pool                = Dleno\CommonCore\Db\AmqpDbConfig::getPool($poolName);
-            $pool['connections'] = $pool['min_connections'] = $pool['max_connections'] = 1;
-            $concurrent          = Dleno\CommonCore\Db\AmqpDbConfig::getConcurrent($poolName);
-            $config              = [
+            $pool                        = Dleno\CommonCore\Db\AmqpDbConfig::getPool($poolName);
+            $pool['connections']         = $pool['min_connections'] = $pool['max_connections'] = 1;
+            $concurrent                  = Dleno\CommonCore\Db\AmqpDbConfig::getConcurrent($poolName);
+            $config                      = [
                 'host'       => env('AMQP_HOST', 'localhost'),
                 'port'       => (int)env('AMQP_PORT', 5672),
                 'user'       => env('AMQP_USER', ''),
