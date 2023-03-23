@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'rpc_registry' => env('RPC_REGISTRY', false),
+    'rpc_registry' => env('RPC_REGISTRY', false),//是否启用registry模式，否则使用nodes配置
     'nodes' => [
         'local' => [//app_env
             //'Service.Module.ServiceName' => [['port' => 9601, 'host' => 'service-name.xxxx.com']],
@@ -9,10 +9,10 @@ return [
     ],
     'consumers' => value(
         function () {
-            //所有服务放入此数组-只能调用业务服务
+            //所有服务放入此数组
             $services = [
-                // 服务
-                //'Service.Module.ServiceName'      => App\InterfaceService\Contracts\Module\ServiceNameInterface::class,
+                // 服务(Interface接口单独建项目，服务端和客户端共用，避免更改时不一致)
+                //'Service.Module.ServiceName'      => Common\InterfaceService\Contracts\Module\ServiceNameInterface::class,
             ];
 
 

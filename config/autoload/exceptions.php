@@ -15,6 +15,7 @@ return [
             \Dleno\CommonCore\Exception\Handler\CommonExceptionHandler::class,//公共异常控制器，不中断
             \Dleno\CommonCore\Exception\Handler\Http\HttpExceptionHandler::class,//http异常控制器
             \Dleno\CommonCore\Exception\Handler\Http\ValidationExceptionHandler::class,//验证器异常控制器
+            \Dleno\CommonCore\Exception\Handler\Rpc\RpcClientRequestExceptionHandler::class,//rpc-client请求异常
             \Dleno\CommonCore\Exception\Handler\Http\AppExceptionHandler::class,//APP异常控制器
             \Dleno\CommonCore\Exception\Handler\Http\ServerExceptionHandler::class,//系统异常控制器
             \Dleno\CommonCore\Exception\Handler\Http\DefaultExceptionHandler::class,//默认异常控制器
@@ -23,9 +24,17 @@ return [
             \Dleno\CommonCore\Exception\Handler\CommonExceptionHandler::class,//公共异常控制器，不中断
             \Dleno\CommonCore\Exception\Handler\Websocket\HttpExceptionHandler::class,//http异常控制器
             \Dleno\CommonCore\Exception\Handler\Websocket\ValidationExceptionHandler::class,//验证器异常控制器
+            \Dleno\CommonCore\Exception\Handler\Rpc\RpcClientRequestExceptionHandler::class,//rpc-client请求异常
             \Dleno\CommonCore\Exception\Handler\Websocket\AppExceptionHandler::class,//APP异常控制器
             \Dleno\CommonCore\Exception\Handler\Websocket\ServerExceptionHandler::class,//系统异常控制器
             \Dleno\CommonCore\Exception\Handler\Websocket\DefaultExceptionHandler::class,//默认异常控制器
+        ],
+        'jsonrpc' => [
+            \Dleno\CommonCore\Exception\Handler\CommonExceptionHandler::class,//公共异常控制器，不中断
+            \Dleno\CommonCore\Exception\Handler\Rpc\RpcClientRequestExceptionHandler::class,//rpc-client请求异常
+            \Dleno\CommonCore\Exception\Handler\Rpc\AppExceptionHandler::class,//APP异常控制器
+            \Dleno\CommonCore\Exception\Handler\Rpc\ServerExceptionHandler::class,//系统异常控制器
+            \Dleno\CommonCore\Exception\Handler\Rpc\DefaultExceptionHandler::class,//默认异常控制器
         ],
     ],
 ];

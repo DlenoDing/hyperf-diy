@@ -16,4 +16,7 @@ return [
     'ws' => [
         \App\WebSocket\Middleware\WebSocketAuthMiddleware::class,//ws握手
     ],
+    'jsonrpc' => [
+        \Dleno\CommonCore\Middleware\Rpc\InitMiddleware::class,//初始化中间件
+    ],
 ];

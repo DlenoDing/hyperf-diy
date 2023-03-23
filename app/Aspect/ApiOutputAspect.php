@@ -52,10 +52,18 @@ class ApiOutputAspect extends AbstractAspect
                     /** @var Response $result */
                     $output = $result->getBody()
                                      ->getContents();
-                    $output = OpenSslCrypt::encrypt($output, ApiServer::getClientAesKey());
+                    try {
+                        $output = OpenSslCrypt::encrypt($output, ApiServer::getClientAesKey());
+                    } catch (\Throwable $e) {
+                        $output = 'ClientKey Is Error';
+                    }
                     $result = $result->withBody(new \Hyperf\HttpMessage\Stream\SwooleStream($output));
                 } else {
-                    $result = OpenSslCrypt::encrypt($result, ApiServer::getClientAesKey());
+                    try {
+                        $result = OpenSslCrypt::encrypt($result, ApiServer::getClientAesKey());
+                    } catch (\Throwable $e) {
+                        $result = 'ClientKey Is Error';
+                    }
                 }
             }
         }

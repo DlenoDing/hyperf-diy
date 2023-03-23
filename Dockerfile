@@ -1,4 +1,4 @@
-FROM registry.cn-hangzhou.aliyuncs.com/dleno-server/php:alp3.12-php7.4-sw4.8.7
+FROM registry.cn-hangzhou.aliyuncs.com/dleno-server/php:alp3.12-php7.4-sw4.8.13
 LABEL maintainer="dleno <dleno@126.com>" version="2.0"
 
 ##
@@ -20,9 +20,9 @@ COPY . /opt/www
 
 #composer安装项目依赖
 RUN cd /opt/www \
-    && composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/ \
-#    && composer config -g repo.packagist composer https://packagist.org \
-    && composer install --no-dev -o
+ #    && composer config -g repos.packagist composer https://mirrors.cloud.tencent.com/composer/ \
+     && composer config -g repos.packagist composer https://mirrors.aliyun.com/composer/ \
+     && composer install --no-dev -o
 
 # update
 RUN ln -sf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
@@ -40,7 +40,7 @@ RUN cd /opt/www \
 WORKDIR /opt/www
 
 
-EXPOSE 9504 9505
+EXPOSE 9504 9505 9506
 
 ENTRYPOINT ["sh", "/opt/www/docker/docker-entrypoint.sh"]
 

@@ -1,3 +1,4 @@
-# Api Http
+# 自制基础框架
 
-Http服务的api接口基础项目
+根据Hyperf框架而来，修改了Hyperf框架底层的一些东西，加入了一些功能的使用示例
+目前支持http,ws,json-rpc

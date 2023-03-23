@@ -6,11 +6,11 @@ return [
         'redis'          => [
             'pool' => 'default'
         ],
-        'channel'        => 'queue',
-        'timeout'        => 2,
-        'retry_seconds'  => [5, 15, 30, 60, 300, 1800],//失败后重新尝试间隔
-        'handle_timeout' => 10,
-        'processes'      => 1,
+        'channel'        => 'queue',//队列名称
+        'timeout'        => 1,//每次取数据的超时时间
+        'retry_seconds'  => [1, 3, 5, 10, 15, 30, 60, 300, 1800],//失败后重新尝试间隔
+        'handle_timeout' => 60,//job执行超时时间
+        'processes'      => 1,//消费进程数
         'concurrent'     => [
             'limit' => 5,
         ],

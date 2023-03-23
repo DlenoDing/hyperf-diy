@@ -6,26 +6,29 @@ use Hyperf\Server\Server;
 use Hyperf\Server\Event;
 
 return [
+    //todo 启用ws服务时必须使用SWOOLE_BASE模式（否则客户端FD数据会有问题），其他类型服务可根据实际需求选择，如SWOOLE_PROCESS
     'mode'      => SWOOLE_BASE,
     'servers'   => [
         [
             'name'      => 'http',
             'type'      => Server::SERVER_HTTP,
             'host'      => '0.0.0.0',
-            'port'      => (int)env("APP_PORT", 9501),
+            'port'      => (int)env("APP_PORT", 9504),
             'sock_type' => SWOOLE_SOCK_TCP,
             'callbacks' => [
                 Event::ON_REQUEST => [Hyperf\HttpServer\Server::class, 'onRequest'],
             ],
             'settings'  => [
-                'max_request' => (int)env("MAX_REQUEST", 100000),
+                //work达到此请求数量，进程关闭并重启(非特殊需求不建议设置)
+                //内存溢出时可临时设置解决，但每次进程重启会导致正在执行的协程全部中断
+                'max_request' => (int)env("MAX_REQUEST", 0),
             ]
         ],
         [
             'name'      => 'ws',
             'type'      => Server::SERVER_WEBSOCKET,
             'host'      => '0.0.0.0',
-            'port'      => (int)env("WS_PORT", 9502),
+            'port'      => (int)env("WS_PORT", 9505),
             'sock_type' => SWOOLE_SOCK_TCP,
             'callbacks' => [
                 Event::ON_HAND_SHAKE => [Hyperf\WebSocketServer\Server::class, 'onHandShake'],
@@ -39,6 +42,25 @@ return [
                 'open_websocket_pong_frame'  => true,
                 'websocket_compression'      => env('WEBSOCKET_COMPRESSION', false),//启用帧压缩
             ]
+        ],
+        [
+            'name'      => 'jsonrpc',
+            'type'      => Server::SERVER_BASE,
+            'host'      => '0.0.0.0',
+            'port'      => (int)env("RPC_PORT", 9506),
+            'sock_type' => SWOOLE_SOCK_TCP,
+            'callbacks' => [
+                Event::ON_RECEIVE => [\Hyperf\JsonRpc\TcpServer::class, 'onReceive'],
+            ],
+            'settings'  => [
+                'open_eof_split'     => true,
+                'package_eof'        => "\r\n",
+                //'open_length_check' => true,
+                //'package_length_type' => 'N',
+                //'package_length_offset' => 0,
+                //'package_body_offset' => 4,
+                'package_max_length' => 1024 * 1024 * 2,
+            ],
         ],
     ],
     'settings'  => [

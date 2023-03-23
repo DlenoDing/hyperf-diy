@@ -65,10 +65,6 @@ class ApiModuleBeforeAspect extends AbstractAspect
      */
     private function dataDecryption($whiteVal)
     {
-        $request     = get_inject_obj(RequestInterface::class);
-        $postRawBody = $request->getBody()
-                               ->getContents();
-        //return;
         //关闭加密功能
         if (!config('app.api_data_crypt')) {
             return;
@@ -77,6 +73,9 @@ class ApiModuleBeforeAspect extends AbstractAspect
         if (CheckVal::checkInStatus(GlobalConf::WHITE_TYPE_ENCRYPT, $whiteVal)) {
             return;
         }
+        $request     = get_inject_obj(RequestInterface::class);
+        $postRawBody = $request->getBody()
+                               ->getContents();
         //加密数据处理
         $isJson = CheckVal::isJson($postRawBody);
         if (!$isJson && !empty($postRawBody)) {

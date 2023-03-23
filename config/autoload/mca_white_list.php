@@ -13,6 +13,8 @@
 use Dleno\CommonCore\Conf\GlobalConf;
 
 return [
-//    'Admin.Manager.Login' => GlobalConf::WHITE_TYPE_TOKEN,
-//    '*' => GlobalConf::WHITE_TYPE_TOKEN,
+    //'Admin.Manager.Login'  => GlobalConf::WHITE_TYPE_TOKEN,
+    //'*'                    => GlobalConf::WHITE_TYPE_TOKEN,
+    'Test'   => GlobalConf::WHITE_TYPE_ENCRYPT | GlobalConf::WHITE_TYPE_SIGN | GlobalConf::WHITE_TYPE_TOKEN,
+    'Notify' => GlobalConf::WHITE_TYPE_ENCRYPT | GlobalConf::WHITE_TYPE_SIGN | GlobalConf::WHITE_TYPE_TOKEN,
 ];

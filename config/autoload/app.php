@@ -19,11 +19,15 @@ return [
     'global_context'        => array_merge(
         \Dleno\CommonCore\Conf\GlobalContextConf::$globalContext,
         [
+            //其他需求定义
+            ApiRequestConf::REQUEST_ADMIN_MODULE,
+            ApiRequestConf::REQUEST_ROUTE_VAL,
+            ApiRequestConf::REQUEST_AES_KEY,
             ApiRequestConf::REQUEST_USER_INFO,
+            ApiRequestConf::REQUEST_USER_ID,
             //其他需求定义
         ]
     ),
-    'dingding_notice_token' => env('DINGDING_NOTICE_TOKEN', ''),
     //跨域设置-允许的请求类型
     'ac_allow_methods'      => ['POST', 'GET', 'HEAD'],
     //跨域设置-允许的header
@@ -39,5 +43,7 @@ return [
         "Client-Nonce",             //随机数
         "Client-Timestamp",         //时间戳
         "Client-Token",             //用户token
+        //加密
+        "Client-Key",              //接口加密秘钥
     ],
 ];
