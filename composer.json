@@ -17,9 +17,7 @@
         "ext-json": "*",
         "hyperf/framework": "~2.2.0",
         "hyperf/websocket-server": "~2.2.0",
-        "dleno/common-core": "~2.2.0",
-        "qcloud/cos-sdk-v5": "~2.3.0",
-        "aliyuncs/oss-sdk-php": "^2.4"
+        "dleno/common-core": "~2.2.0"
     },
     "require-dev": {
         "swoole/ide-helper": "^4.6",
