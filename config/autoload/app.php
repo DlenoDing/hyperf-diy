@@ -12,7 +12,7 @@ return [
     //API是否开启数据加密
     'api_data_crypt'        => env('API_DATA_CRYPT', false),
     //API是否开启接口鉴权
-    'api_check_sigin'       => env('API_CHECK_SIGIN', false),
+    'api_check_sign'       => env('API_CHECK_SIGN', false),
     //管理后台模块名称
     'admin_module_name'     => env('ADMIN_MODULE_NAME', ''),
     //允许跨协程自动复制的context key(创建协程时会自动将当前协程对应的值复制到子协程)

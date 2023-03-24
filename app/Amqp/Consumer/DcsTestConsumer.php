@@ -7,7 +7,7 @@ use Dleno\CommonCore\Base\Amqp\BaseConsumer;
 use Dleno\CommonCore\Tools\Server;
 
 /**
- * @Consumer(exchange="DcsTestExchange", name ="DcsTestConsumer", nums=1, enable=true)
+ * @Consumer(exchange="DcsTestExchange", name ="DcsTestConsumer", nums=1)
  */
 class DcsTestConsumer extends BaseConsumer
 {
@@ -63,5 +63,14 @@ class DcsTestConsumer extends BaseConsumer
         $serverId = Server::getIpAddr();
         $serverId = str_replace('.', '_', $serverId);
         return 'DcsTest_' . $serverId;
+    }
+
+    public function isEnable(): bool
+    {
+        $env = config('app_env');
+        if ($env === 'local') {
+            return false;
+        }
+        return true;
     }
 }

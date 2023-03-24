@@ -9,7 +9,7 @@ use Hyperf\Amqp\Result;
 use Dleno\CommonCore\Base\Amqp\BaseConsumer;
 
 /**
- * @Consumer(exchange="TestExchange", routingKey="TestRouting", queue="TestQueue", name="TestConsumer", nums=1, enable=true)
+ * @Consumer(exchange="TestExchange", routingKey="TestRouting", queue="TestQueue", name="TestConsumer", nums=1)
  */
 class TestConsumer extends BaseConsumer
 {
@@ -23,5 +23,14 @@ class TestConsumer extends BaseConsumer
         var_dump($data);
 
         return Result::ACK;
+    }
+
+    public function isEnable(): bool
+    {
+        $env = config('app_env');
+        if ($env === 'local') {
+            return false;
+        }
+        return true;
     }
 }

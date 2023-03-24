@@ -32,8 +32,8 @@ class TestQueueConsumer extends BaseQueueConsumer
     {
         $env = config('app_env');
         if ($env === 'local') {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 }

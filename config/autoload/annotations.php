@@ -16,9 +16,14 @@ return [
         'paths' => [
             BASE_PATH . '/app',
         ],
-        'ignore_annotations' => [
-            'mixin',
-        ],
+        'ignore_annotations' => value(function (){
+            $ignore = ['mixin'];
+            //未开启TASK功能时，忽略对应注解，避免报错
+            if (intval(env('TASK_WORK_NUM', -1)) == -1) {
+                $ignore[] = 'Hyperf\Task\Annotation\Task';
+            }
+            return $ignore;
+        }),
         'class_map' => [
         ],
     ],

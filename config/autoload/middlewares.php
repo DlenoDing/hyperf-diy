@@ -9,14 +9,20 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
-return [
-    'http' => [
+$exceptions = [];
+if (env('ENABLE_HTTP', false)) {
+    $exceptions['http'] = [
         \Dleno\CommonCore\Middleware\Http\InitMiddleware::class,//初始化中间件
-    ],
-    'ws' => [
+    ];
+}
+if (env('ENABLE_WS', false)) {
+    $exceptions['ws'] = [
         \App\WebSocket\Middleware\WebSocketAuthMiddleware::class,//ws握手
-    ],
-    'jsonrpc' => [
+    ];
+}
+if (env('ENABLE_RPC', false)) {
+    $exceptions['jsonrpc'] = [
         \Dleno\CommonCore\Middleware\Rpc\InitMiddleware::class,//初始化中间件
-    ],
-];
+    ];
+}
+return $exceptions;

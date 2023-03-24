@@ -17,5 +17,4 @@ return [
     Hyperf\HttpServer\CoreMiddleware::class                 => \Dleno\CommonCore\Middleware\Http\CoreMiddleware::class,
     Hyperf\HttpServer\Router\DispatcherFactory::class       => \Dleno\CommonCore\Core\Route\RouterDispatcherFactory::class,
     Hyperf\HttpServer\Contract\RequestInterface::class      => \Dleno\CommonCore\Core\Request\Request::class,
-
 ];
