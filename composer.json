@@ -60,12 +60,17 @@
         "post-autoload-dump": [
             "rm -rf runtime/container"
         ],
-        "test": "co-phpunit -c phpunit.xml --colors=always",
+        "test": "co-phpunit --prepend test/bootstrap.php -c phpunit.xml --colors=always",
         "cs-fix": "php-cs-fixer fix $1",
         "analyse": "phpstan analyse --memory-limit 512M -l 0 -c phpstan.neon ./app ./config",
-        "start": "php ./bin/hyperf.php start"
+        "start": [
+            "Composer\\Config::disableProcessTimeout",
+            "php ./bin/hyperf.php start"
+        ]
     },
     "config": {
-        "secure-http": false
+        "secure-http": false,
+        "optimize-autoloader": true,
+        "sort-packages": true
     }
 }
