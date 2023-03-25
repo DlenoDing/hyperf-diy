@@ -18,6 +18,10 @@ return [
         ],
         'ignore_annotations' => value(function (){
             $ignore = ['mixin'];
+            //未开启RPC时，忽略对应注解，避免报错
+            if (!env('ENABLE_RPC', false)) {
+                $ignore[] = 'Hyperf\RpcServer\Annotation\RpcService';
+            }
             //未开启TASK功能时，忽略对应注解，避免报错
             if (intval(env('TASK_WORK_NUM', -1)) == -1) {
                 $ignore[] = 'Hyperf\Task\Annotation\Task';
