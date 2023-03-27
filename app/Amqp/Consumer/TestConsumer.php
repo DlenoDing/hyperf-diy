@@ -27,6 +27,9 @@ class TestConsumer extends BaseConsumer
 
     public function isEnable(): bool
     {
+        if (!env('AMQP_ENABLE', false)) {
+            return false;
+        }
         $env = config('app_env');
         if ($env === 'local') {
             return false;

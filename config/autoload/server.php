@@ -91,7 +91,7 @@ return [
                 //'max_wait_time' => 60,
                 //'reload_async' => true,
             ];
-            if (intval(env('TASK_WORK_NUM', -1)) >= 0) {
+            if (env('ENABLE_TASK', false)) {
                 // Task Worker 数量，根据您的服务器配置而配置适当的数量
                 $settings['task_worker_num'] = env('TASK_WORK_NUM') ?: swoole_cpu_num();
                 // 因为 `Task` 主要处理无法协程化的方法，所以这里推荐设为 `false`，避免协程下出现数据混淆的情况
@@ -106,7 +106,7 @@ return [
             Event::ON_PIPE_MESSAGE => [Hyperf\Framework\Bootstrap\PipeMessageCallback::class, 'onPipeMessage'],
             Event::ON_WORKER_EXIT  => [Hyperf\Framework\Bootstrap\WorkerExitCallback::class, 'onWorkerExit'],
         ];
-        if (intval(env('TASK_WORK_NUM', -1)) >= 0) {
+        if (env('ENABLE_TASK', false)) {
             // Task callbacks
             $callbacks[Event::ON_TASK] = [Hyperf\Framework\Bootstrap\TaskCallback::class, 'onTask'];
             $callbacks[Event::ON_FINISH] = [Hyperf\Framework\Bootstrap\FinishCallback::class, 'onFinish'];

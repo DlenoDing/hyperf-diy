@@ -17,6 +17,7 @@
         "ext-json": "*",
         "hyperf/framework": "~2.2.0",
         "hyperf/crontab": "~2.2.0",
+        "hyperf/task": "~2.2.0",
         "hyperf/websocket-server": "~2.2.0",
         "hyperf/rpc-server": "~2.2.0",
         "dleno/common-core": "~2.2.0"

@@ -11,10 +11,12 @@ declare(strict_types=1);
  */
 return [
     //RequestParser
-    Hyperf\HttpMessage\Server\RequestParserInterface::class => \Dleno\CommonCore\Core\Request\RequestParser::class,
+    Hyperf\HttpMessage\Server\RequestParserInterface::class => Dleno\CommonCore\Core\Request\RequestParser::class,
 
     //路由
-    Hyperf\HttpServer\CoreMiddleware::class                 => \Dleno\CommonCore\Middleware\Http\CoreMiddleware::class,
-    Hyperf\HttpServer\Router\DispatcherFactory::class       => \Dleno\CommonCore\Core\Route\RouterDispatcherFactory::class,
-    Hyperf\HttpServer\Contract\RequestInterface::class      => \Dleno\CommonCore\Core\Request\Request::class,
+    Hyperf\HttpServer\CoreMiddleware::class                 => Dleno\CommonCore\Middleware\Http\CoreMiddleware::class,
+    Hyperf\HttpServer\Router\DispatcherFactory::class       => Dleno\CommonCore\Core\Route\RouterDispatcherFactory::class,
+    Hyperf\HttpServer\Contract\RequestInterface::class      => Dleno\CommonCore\Core\Request\Request::class,
+    //Task
+    Hyperf\Task\TaskExecutor::class                         => App\TaskCron\TaskExecutor::class,
 ];

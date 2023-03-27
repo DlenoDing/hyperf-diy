@@ -24,6 +24,7 @@ return [
                 'concurrent' => $concurrent,
                 'pool'       => $pool,
                 'params'     => $params,
+                'open_ssl'   => env('AMQP_OPEN_SSL', false),
             ];
 
             return $config;
@@ -46,6 +47,7 @@ return [
                 'concurrent' => $concurrent,
                 'pool'       => $pool,
                 'params'     => $params,
+                'open_ssl'   => env('AMQP_OPEN_SSL', false),
             ];
 
             return $config;

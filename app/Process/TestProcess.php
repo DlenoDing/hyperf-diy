@@ -48,6 +48,7 @@ class TestProcess extends AbstractProcess
 
     public function isEnable($server): bool
     {
+        return false;
         $env = config('app_env');
         if ($env === 'local') {
             return false;
