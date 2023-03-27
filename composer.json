@@ -23,13 +23,13 @@
     },
     "require-dev": {
         "swoole/ide-helper": "^4.6",
-        "friendsofphp/php-cs-fixer": "^2.14",
+        "friendsofphp/php-cs-fixer": "^3.0",
         "mockery/mockery": "^1.0",
         "phpstan/phpstan": "^0.12",
         "hyperf/devtool": "~2.2.0",
         "hyperf/testing": "~2.2.0",
-        "hyperf/watcher": "~2.2.0",
-        "squizlabs/php_codesniffer": "^3.5"
+        "squizlabs/php_codesniffer": "^3.5",
+        "hyperf/ide-helper": "~2.2.0"
     },
     "suggest": {
         "ext-openssl": "Required to use HTTPS.",
