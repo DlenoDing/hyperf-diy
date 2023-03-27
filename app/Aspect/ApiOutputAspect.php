@@ -3,6 +3,8 @@
 namespace App\Aspect;
 
 use App\Tools\ApiServer;
+use Dleno\CommonCore\Conf\RequestConf;
+use Hyperf\Context\Context;
 use Hyperf\Di\Annotation\Aspect;
 use Hyperf\Di\Aop\AbstractAspect;
 use Hyperf\Di\Aop\ProceedingJoinPoint;
@@ -37,32 +39,33 @@ class ApiOutputAspect extends AbstractAspect
         // 在调用前进行某些处理
         $result = $proceedingJoinPoint->process();
         // 在调用后进行某些处理
-        //接口输出日志
-        ApiOutLog::writeLog($proceedingJoinPoint, $result);
-
-        //接口数据输出加密
-        if (config('app.api_data_crypt')) {
-            //!(非正式环境debug||白名单)
-            $whiteVal = ApiServer::getRouteVal();
-            if (!((!Server::isProd() && get_header_val('Client-Debug')) || CheckVal::checkInStatus(
-                    GlobalConf::WHITE_TYPE_ENCRYPT,
-                    $whiteVal
-                ))) {
-                if ($result instanceof ResponseInterface) {
-                    /** @var Response $result */
-                    $output = $result->getBody()
-                                     ->getContents();
-                    try {
-                        $output = OpenSslCrypt::encrypt($output, ApiServer::getClientAesKey());
-                    } catch (\Throwable $e) {
-                        $output = 'ClientKey Is Error';
-                    }
-                    $result = $result->withBody(new \Hyperf\HttpMessage\Stream\SwooleStream($output));
-                } else {
-                    try {
-                        $result = OpenSslCrypt::encrypt($result, ApiServer::getClientAesKey());
-                    } catch (\Throwable $e) {
-                        $result = 'ClientKey Is Error';
+        if (Context::get(RequestConf::IN_HTTP_SERVER)) {
+            //接口输出日志
+            ApiOutLog::writeLog($proceedingJoinPoint, $result);
+            //接口数据输出加密
+            if (config('app.api_data_crypt')) {
+                //!(非正式环境debug||白名单)
+                $whiteVal = ApiServer::getRouteVal();
+                if (!((!Server::isProd() && get_header_val('Client-Debug')) || CheckVal::checkInStatus(
+                        GlobalConf::WHITE_TYPE_ENCRYPT,
+                        $whiteVal
+                    ))) {
+                    if ($result instanceof ResponseInterface) {
+                        /** @var Response $result */
+                        $output = $result->getBody()
+                                         ->getContents();
+                        try {
+                            $output = OpenSslCrypt::encrypt($output, ApiServer::getClientAesKey());
+                        } catch (\Throwable $e) {
+                            $output = 'ClientKey Is Error';
+                        }
+                        $result = $result->withBody(new \Hyperf\HttpMessage\Stream\SwooleStream($output));
+                    } else {
+                        try {
+                            $result = OpenSslCrypt::encrypt($result, ApiServer::getClientAesKey());
+                        } catch (\Throwable $e) {
+                            $result = 'ClientKey Is Error';
+                        }
                     }
                 }
             }

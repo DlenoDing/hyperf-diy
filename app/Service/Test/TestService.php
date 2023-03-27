@@ -5,6 +5,8 @@ namespace App\Service\Test;
 use App\Components\Test\Object\TestObject;
 use App\Components\Test\TestComponent;
 use App\Service\BaseService;
+use Dleno\CommonCore\Exception\AppException;
+use Dleno\DingTalk\Robot;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
 
@@ -12,6 +14,11 @@ class TestService extends BaseService
 {
     public function test(array $params)
     {
+        //钉钉告警
+        Robot::get()->notice('ssss');
+        Robot::get('trace')->exception(new AppException('ddd'));
+        //Robot::get('其他机器人配置key')->notice('222222');
+
         $headers = get_inject_obj(RequestInterface::class)->getHeaders();
 
         $testObj = get_inject_obj(TestComponent::class)->getData($params['key'] ?? 'test');

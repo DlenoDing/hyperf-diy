@@ -2,6 +2,8 @@
 
 namespace App\Aspect;
 
+use Dleno\CommonCore\Conf\RpcContextConf;
+use Hyperf\Context\Context;
 use Hyperf\Di\Annotation\Aspect;
 use Hyperf\Di\Aop\AbstractAspect;
 use Hyperf\Di\Aop\ProceedingJoinPoint;
@@ -29,9 +31,10 @@ class RpcOutputAspect extends AbstractAspect
         // 在调用前进行某些处理
         $result = $proceedingJoinPoint->process();
         // 在调用后进行某些处理
-        //接口输出日志
-        RpcOutLog::writeLog($proceedingJoinPoint, $result);
-
+        if (Context::get(RpcContextConf::IN_RPC_SERVER)) {
+            //接口输出日志
+            RpcOutLog::writeLog($proceedingJoinPoint, $result);
+        }
         return $result;
     }
 }
