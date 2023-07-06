@@ -10,6 +10,13 @@ Router::get(
         return '';
     }
 );
+//health
+Router::get(
+    '/',
+    function () {
+        return '';
+    }
+);
 
 Router::addServer(
     'ws',
