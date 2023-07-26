@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\WebSocket\Middleware;
 
+use App\WebSocket\Components\WsAccountComponent;
+use App\WebSocket\Conf\WsRequestConf;
 use Dleno\CommonCore\Conf\RcodeConf;
 use Dleno\CommonCore\Conf\RequestConf;
 use Dleno\CommonCore\Exception\Http\HttpException;
@@ -55,22 +57,27 @@ class WebSocketAuthMiddleware implements MiddlewareInterface
      */
     private function checkHandShake(ServerRequestInterface $request)
     {
-        $debug = get_query_val('Client-Debug', false);
+        $debug = get_query_val(WsRequestConf::REQUEST_HEADER_DEBUG, false);
         $debug = ($debug && !Server::isProd()) ? true : false;
 
         Server::getTraceId();
-        $clientToken = get_query_val('Client-Token', '');
+        $clientToken = get_query_val(WsRequestConf::REQUEST_HEADER_TOKEN, '');
         if (empty($clientToken)) {
             throw new HttpException('Empty Token', RcodeConf::ERROR_TOKEN);
         }
 
-        $request = $request->withHeader('Client-Debug', $debug ? 1 : 0)
-                           ->withHeader('Client-Token', $clientToken);
+        $request = $request->withHeader(WsRequestConf::REQUEST_HEADER_DEBUG, $debug ? 1 : 0)
+                           ->withHeader(WsRequestConf::REQUEST_HEADER_TOKEN, $clientToken);
 
         try {
-            //检查$clientToken
-        } catch (\Exception $e) {
-            var_dump($e->getMessage());
+            $wsAccountCpt = get_inject_obj(WsAccountComponent::class);
+            $account      = $wsAccountCpt->checkAccountByToken($clientToken);
+            $accountId    = $account['account_id'] ?? 0;
+            if (empty($accountId)) {
+                throw new HttpException('Error Token.', RcodeConf::ERROR_TOKEN);
+            }
+            $request = $request->withHeader(WsRequestConf::REQUEST_HEADER_ACCOUNT_ID, $accountId);
+        } catch (\Throwable $e) {
             throw new HttpException('Error Token', RcodeConf::ERROR_TOKEN);
         }
 
@@ -78,7 +85,6 @@ class WebSocketAuthMiddleware implements MiddlewareInterface
         Context::set(ServerRequestInterface::class, $request);
         //后续该fd全局使用
         WsContext::set(ServerRequestInterface::class, $request);
-        //Logger::businessLog('HandShake-Request')->info($clientDevice.'::'.'握手完成');
 
         return $request;
     }

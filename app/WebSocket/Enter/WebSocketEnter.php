@@ -51,14 +51,19 @@ class WebSocketEnter implements OnMessageInterface, OnOpenInterface, OnCloseInte
     {
         //服务器固定时区运行
         date_default_timezone_set(config('app.default_time_zone', 'Asia/Shanghai'));
-
-        $debug = get_header_val('Client-Debug', false);
-
-        if ($frame->opcode == WEBSOCKET_OPCODE_PING || ($debug && $frame->data == WEBSOCKET_OPCODE_PING)) {
-            // 回复 Pong 帧(客户端主心跳放在服务内，后台不以ping为实际心跳)
-            $pongFrame = new Frame();
-            $pongFrame->opcode = WEBSOCKET_OPCODE_PONG;
-            $server->push($frame->fd, $pongFrame);
+        if ($frame->opcode == WEBSOCKET_OPCODE_PING || $frame->data == WEBSOCKET_OPCODE_PING) {
+            if ($frame->data == WEBSOCKET_OPCODE_PING) {
+                //发送内容是文本ping;则直接回复文本pong（兼容浏览器客户端）
+                $pongFrame         = new Frame();
+                $pongFrame->opcode = WEBSOCKET_OPCODE_TEXT;
+                $pongFrame->data   = WEBSOCKET_OPCODE_PONG;
+                $server->push($frame->fd, $pongFrame);
+            } else {
+                // 回复 Pong 帧(真实协议)
+                $pongFrame         = new Frame();
+                $pongFrame->opcode = WEBSOCKET_OPCODE_PONG;
+                $server->push($frame->fd, $pongFrame);
+            }
             get_inject_obj(WebSocketMainHeartbeat::class)->handle($server, $frame);
         } else {
             get_inject_obj(WebSocketMessage::class)->handle($server, $frame);

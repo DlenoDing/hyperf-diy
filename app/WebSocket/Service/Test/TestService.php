@@ -2,24 +2,36 @@
 
 namespace App\WebSocket\Service\Test;
 
+use App\WebSocket\Components\WsAccountComponent;
+use App\WebSocket\Components\WsPushMsgComponent;
+use App\WebSocket\Conf\WsServerConf;
 use App\WebSocket\Service\BaseService;
+use Dleno\CommonCore\Tools\Strings\Strings;
 
 
 class TestService extends BaseService
 {
     public function index($post)
     {
-        /*$wssCpt = get_inject_obj(WebSocketServerComponent::class);
+        $cpt = get_inject_obj(WsPushMsgComponent::class);
+        $cpt->pushPubMessage(WsServerConf::CMD_TYPE_NOTICE, [
+            'tt' => time(),
+            'str'  => Strings::makeRandStr(16),
+        ]);
 
-        $cursor = 1;
-        for ($i = 0; $i <= 3; $i++) {
-            $ret = $wssCpt->getClients($cursor, 5);
-            var_dump($cursor);
-            var_dump($ret);
-        }*/
-        //AsyncQueue::push(new TestJob(mt_rand(100,999)));
-        //var_dump(get_inject_obj(UserComponent::class)->getUsersByNum(3));
-        //get_header_val('Client-Token')
-        return ['r' => 'a'];
+        $accountId = get_inject_obj(WsAccountComponent::class)->getCurrAccountId();
+        $cpt->pushToUidMessage(
+            $accountId,
+            WsServerConf::CMD_TYPE_NOTICE,
+            [
+                'tt' => microtime(true),
+                'str'  => Strings::makeRandStr(32),
+            ],
+            5
+        );
+        return [
+            't' => get_header_val('Client-Token'),
+            'a' => get_header_val('Client-AccountId'),
+        ];
     }
 }
