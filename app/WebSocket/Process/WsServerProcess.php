@@ -37,6 +37,9 @@ class WsServerProcess extends AbstractProcess
 
     public function isEnable($server): bool
     {
+        if (!env('ENABLE_WS', false)) {
+            return false;
+        }
         $env = config('app_env');
         if ($env === 'local') {
             return false;
