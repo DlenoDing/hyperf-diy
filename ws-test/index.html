@@ -29,12 +29,15 @@
     if (params === null || params === '') {
         params = '';
     }
+    var retry = true;
+    var reConnection = 1;
     $(document).ready(function () {
         $('#ws-close').click(function () {
             if (ws != null) {
                 ws.close();
                 clearInterval(ping);
             }
+            retry = false;
         });
         $('#ws-connect').click(function () {
             localStorage.setItem('env', env);
@@ -45,8 +48,9 @@
             //主机
             var url = geturl();
             ws = new WebSocket(url);
-
             ws.onopen = function () {
+                addPushVal('Connection At:' + (new Date()).toLocaleString(), reConnection, 'Connection');
+                retry = true;
                 //当WebSocket创建成功时，触发onopen事件
                 ping = setInterval(function () {
                     ws.send(0x09);
@@ -81,6 +85,10 @@
                 $('#ws-close').attr('disabled', true);
                 $('#ws-connect').removeAttr('disabled');
                 clearInterval(ping);
+                if (retry) {
+                    reConnection++;
+                    $('#ws-connect').click();
+                }
             };
             ws.onerror = function (e) {
                 //如果出现连接、处理、接收、发送数据失败的时候触发onerror事件
@@ -168,12 +176,12 @@
     });
 
     function addRetrunVal(reqId, times, action, data) {
-        $('#ws-return').prepend('<div class="ret-item"><div class="reqId">reqId:' + reqId + '; action:[' + action + ']; times:(' + times + 's)</div><div class="data"><pre class="prettyprint">' + data + '</pre></div></div>');
+        $('#ws-return').prepend('<div class="ret-item"><div class="reqId">Response:: reqId:[' + reqId + ']; action:[' + action + ']; times:[' + times + 's]; (' + (new Date()).toLocaleString() + ')</div><div class="data"><pre class="prettyprint">' + data + '</pre></div></div>');
         PR.prettyPrint();
     }
 
-    function addPushVal(data, i) {
-        $('#ws-return').prepend('<div class="ret-item"><div class="reqId">Push Data[' + i + ']:</div><div class="data"><pre class="prettyprint">' + data + '</pre></div></div>');
+    function addPushVal(data, i, title = 'Push Data') {
+        $('#ws-return').prepend('<div class="ret-item"><div class="reqId">' + title + ':: num:[' + i + ']; (' + (new Date()).toLocaleString() + ')</div><div class="data"><pre class="prettyprint">' + data + '</pre></div></div>');
         PR.prettyPrint();
     }
 
