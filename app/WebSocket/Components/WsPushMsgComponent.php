@@ -4,17 +4,22 @@ declare (strict_types=1);
 
 namespace App\WebSocket\Components;
 
+use App\WebSocket\AsyncQueue\Job\CheckOnlineJob;
 use App\WebSocket\AsyncQueue\Job\CloseMessageJob;
 use App\WebSocket\AsyncQueue\Job\PushMessageJob;
 use App\Components\BaseComponent;
 use Dleno\CommonCore\Tools\AsyncQueue\AsyncQueue;
 use Hyperf\Di\Annotation\Inject;
+use Hyperf\Utils\Parallel;
 use Hyperf\WebSocketServer\Sender;
 
 class WsPushMsgComponent extends BaseComponent
 {
     //实时消息队列前缀
-    const QUEUE_MESSAGE_PREFIX = 'queue:message:';
+    const QUEUE_MESSAGE_PREFIX = 'ws:queue:message:';
+
+    //检查客户端是否在线前缀
+    const CHECK_ONLINE_PREFIX = 'ws:check:online:';
 
     /**
      * @Inject()
@@ -49,6 +54,64 @@ class WsPushMsgComponent extends BaseComponent
     public function close($fd)
     {
         $this->sender->disconnect(intval($fd));
+    }
+
+    public function checkClientOnline(array $uids, int $concurrent = 100)
+    {
+        $wssCpt   = get_inject_obj(WsServerComponent::class);
+        $wstkCpt  = get_inject_obj(WsTokenComponent::class);
+        $servers  = $wssCpt->getServerList();
+        $parallel = new Parallel($concurrent);
+        foreach ($uids as $uid) {
+            $parallel->add(
+                function () use ($wstkCpt, $servers, $uid) {
+                    $online    = false;
+                    $uidBinds = $wstkCpt->getAccountIdBind($uid);
+                    if (!empty($uidBinds)) {
+                        foreach ($uidBinds as $token => $token2Fd) {
+                            $token2Fd = json_to_array($token2Fd);
+                            if (!in_array($token2Fd['sv'], $servers)) {
+                                $wstkCpt->delAccountIdBind($uid, $token);//对应服务器已无效,删除指定token关系
+                                continue;
+                            }
+                            //分发到对应服务器的消息队列
+                            $job = (new CheckOnlineJob($token2Fd['fd']))->setQueue(self::getQueue($token2Fd['sv']));
+                            AsyncQueue::push($job);
+                            //检查结果
+                            $checkKey = self::getCheckKey($token2Fd['sv'], $token2Fd['fd']);
+                            try {
+                                $check = wait(function () use ($checkKey) {
+                                    $i = 0;
+                                    while (!$this->redis->exists($checkKey) && ($i++) < 500) {
+                                        usleep(10000);
+                                    }
+                                    $check = $this->redis->get($checkKey);
+                                    $this->redis->del($checkKey);
+                                    return $check;
+                                }, 2.0);
+                                if ($check) {
+                                    //检查到其中一个在线则跳出不再检查
+                                    $online = true;
+                                    break;
+                                }
+                            } catch (\Throwable $e) {
+                                //
+                            }
+                        }
+                    }
+                    return $online;
+                },
+                $uid
+            );
+        }
+
+        $onlines = $parallel->wait(false);
+        return $onlines;
+    }
+
+    public static function getCheckKey($serverKey, $fd)
+    {
+        return WsPushMsgComponent::CHECK_ONLINE_PREFIX . $serverKey . ':' . $fd;
     }
 
     /**

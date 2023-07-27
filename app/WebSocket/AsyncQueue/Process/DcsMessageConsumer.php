@@ -27,14 +27,13 @@ class DcsMessageConsumer extends BaseQueueConsumer
      */
     public function getConfig()
     {
-        return $this->_getConfig();
+        $config = $this->_getConfig();
+        $config['concurrent']['limit'] = 50;
+        return $config;
     }
 
     public function isEnable($server): bool
     {
-        if (!env('ENABLE_WS', false)) {
-            return false;
-        }
         $env = config('app_env');
         if ($env === 'local') {
             return false;

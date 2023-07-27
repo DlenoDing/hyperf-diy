@@ -8,16 +8,16 @@ use App\WebSocket\Components\WsPushMsgComponent;
 use App\WebSocket\Components\WsServerComponent;
 use Dleno\CommonCore\Base\AsyncQueue\BaseJob;
 use Dleno\CommonCore\Tools\Logger;
+use Dleno\CommonCore\Tools\Websocket\CheckFd;
+use Hyperf\Redis\Redis;
 
-class CloseMessageJob extends BaseJob
+class CheckOnlineJob extends BaseJob
 {
     //接收参数（可自定义其他或者多个）
     /**
      * @var int
      */
     private $fds;
-
-    //TODO 任务对象不能有大对象的属性（不能用注解）；否则会造成消息体过大
 
     public function __construct($fds)
     {
@@ -30,21 +30,23 @@ class CloseMessageJob extends BaseJob
      */
     public function handle()
     {
-        $pmCpt = get_inject_obj(WsPushMsgComponent::class);
+        $wssCpt    = get_inject_obj(WsServerComponent::class);
+        $serverKey = $wssCpt->getServerKey();
+        $redis     = get_inject_obj(Redis::class);
         if ($this->fds == '-1') {
-            $wssCpt = get_inject_obj(WsServerComponent::class);
-            //发送给当前服务器的所有人
+            //检查当前服务器的所有人
             $cursor = null;
             while (true) {
                 $clients = $wssCpt->getClients($cursor, 100);
                 if (empty($clients)) {
                     break;
                 }
-                foreach ($clients as $client) {
+                foreach ($clients as $fd) {
                     try {
-                        $pmCpt->close($client);
+                        $online = CheckFd::check($fd);
+                        $this->setOnline($redis, $serverKey, $fd, $online);
                     } catch (\Throwable $e) {
-                        Logger::businessLog('CLOSE-FD')
+                        Logger::businessLog('CHECK-FD')
                               ->info(array_to_json(['msg' => $e->getMessage()]));
                     }
                 }
@@ -55,15 +57,22 @@ class CloseMessageJob extends BaseJob
             }
             try {
                 foreach ($this->fds as $fd) {
-                    $pmCpt->close($fd);
+                    $online = CheckFd::check($fd);
+                    $this->setOnline($redis, $serverKey, $fd, $online);
                 }
             } catch (\Throwable $e) {
-                Logger::businessLog('CLOSE-FD')
+                Logger::businessLog('CHECK-FD')
                       ->info(array_to_json(['msg' => $e->getMessage()]));
             }
         }
 
         return true;
+    }
+
+    private function setOnline(Redis $redis, $serverKey, $fd, $online)
+    {
+        $checkKey = WsPushMsgComponent::getCheckKey($serverKey, $fd);
+        $redis->set($checkKey, strval($online ? 1 : 0), 5);
     }
 
     public function getQueue()
