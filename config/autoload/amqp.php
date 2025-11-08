@@ -13,6 +13,7 @@ use function Hyperf\Support\env;
 use function Hyperf\Support\value;
 
 return [
+    'enable' => env('AMQP_ENABLE', false),
     'default' => value(
         function ($poolName = 'default') {
             $params     = Dleno\CommonCore\Db\AmqpDbConfig::getParams($poolName);
