@@ -9,9 +9,12 @@ use App\WebSocket\AsyncQueue\Job\CloseMessageJob;
 use App\WebSocket\AsyncQueue\Job\PushMessageJob;
 use App\Components\BaseComponent;
 use Dleno\CommonCore\Tools\AsyncQueue\AsyncQueue;
+use Hyperf\Coroutine\Parallel;
 use Hyperf\Di\Annotation\Inject;
-use Hyperf\Utils\Parallel;
 use Hyperf\WebSocketServer\Sender;
+
+use function Hyperf\Coroutine\wait;
+use function Hyperf\Support\env;
 
 class WsPushMsgComponent extends BaseComponent
 {
@@ -21,11 +24,8 @@ class WsPushMsgComponent extends BaseComponent
     //检查客户端是否在线前缀
     const CHECK_ONLINE_PREFIX = 'ws:check:online:';
 
-    /**
-     * @Inject()
-     * @var Sender
-     */
-    protected $sender;
+    #[Inject]
+    protected Sender $sender;
 
     /**
      * 给当前服务器的指定FD发送消息

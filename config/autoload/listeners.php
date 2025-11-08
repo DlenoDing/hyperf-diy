@@ -9,9 +9,12 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+use function Hyperf\Support\env;
+
 $listeners = [
     //错误处理
     \Hyperf\ExceptionHandler\Listener\ErrorExceptionHandler::class,
+    \Hyperf\Command\Listener\FailToHandleListener::class,
     //异步队列自动重载超时消息
     \Hyperf\AsyncQueue\Listener\ReloadChannelListener::class,
 ];

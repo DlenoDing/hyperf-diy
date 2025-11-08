@@ -7,15 +7,17 @@ namespace App\AsyncQueue\Process;
 use Dleno\CommonCore\Base\AsyncQueue\BaseQueueConsumer;
 use Hyperf\Process\Annotation\Process;
 
+use function Hyperf\Config\config;
+
 /**
  * 默认消费进程（使用默认队列的都在此消费）
- * @Process(nums=2)
  */
+#[Process(nums:2)]
 class TestQueueConsumer extends BaseQueueConsumer
 {
-    protected $queue = 'test';
+    protected string $queue = 'test';
 
-    protected $reloadChannel = ['timeout', 'failed'];
+    protected array $reloadChannel = ['timeout', 'failed'];
 
     /**
      * 自定义 async_queue 对应的$this->queue配置项

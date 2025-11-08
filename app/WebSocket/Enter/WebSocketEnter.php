@@ -12,15 +12,21 @@ use Hyperf\Contract\OnCloseInterface;
 use Hyperf\Contract\OnMessageInterface;
 use Hyperf\Contract\OnOpenInterface;
 use Swoole\Http\Request;
+use Swoole\Http\Response;
 use Swoole\Websocket\Frame;
+use Swoole\WebSocket\Server;
+use Swow\Psr7\Server\ServerConnection;
+
+use function Hyperf\Config\config;
 
 class WebSocketEnter implements OnMessageInterface, OnOpenInterface, OnCloseInterface
 {
     /**
      * 打开连接（握手成功之后）.
-     * @param \Swoole\Http\Response|\Swoole\WebSocket\Server $server
+     * @param Response|Server|ServerConnection $server
+     * @param Request $request
      */
-    public function onOpen($server, Request $request): void
+    public function onOpen($server, $request): void
     {
         //服务器固定时区运行
         date_default_timezone_set(config('app.default_time_zone', 'Asia/Shanghai'));
@@ -31,7 +37,7 @@ class WebSocketEnter implements OnMessageInterface, OnOpenInterface, OnCloseInte
 
     /**
      * 关闭连接.
-     * @param \Swoole\Http\Response|\Swoole\Server $server
+     * @param Response|\Swoole\Server $server
      */
     public function onClose($server, int $fd, int $reactorId): void
     {
@@ -44,10 +50,10 @@ class WebSocketEnter implements OnMessageInterface, OnOpenInterface, OnCloseInte
 
     /**
      * 消息接收.
-     * @param \Swoole\Http\Response|\Swoole\WebSocket\Server $server
+     * @param Response|Server $server
      * @param Frame $frame
      */
-    public function onMessage($server, Frame $frame): void
+    public function onMessage($server, $frame): void
     {
         //服务器固定时区运行
         date_default_timezone_set(config('app.default_time_zone', 'Asia/Shanghai'));
@@ -56,7 +62,7 @@ class WebSocketEnter implements OnMessageInterface, OnOpenInterface, OnCloseInte
                 //发送内容是文本ping;则直接回复文本pong（兼容浏览器客户端）
                 $pongFrame         = new Frame();
                 $pongFrame->opcode = WEBSOCKET_OPCODE_TEXT;
-                $pongFrame->data   = WEBSOCKET_OPCODE_PONG;
+                $pongFrame->data   = strval(WEBSOCKET_OPCODE_PONG);
                 $server->push($frame->fd, $pongFrame);
             } else {
                 // 回复 Pong 帧(真实协议)

@@ -9,11 +9,8 @@ use Hyperf\Redis\Redis;
 
 class BaseService
 {
-    /**
-     * @Inject
-     * @var Redis
-     */
-    public $redis;
+    #[Inject]
+    public Redis $redis;
 
 
 }

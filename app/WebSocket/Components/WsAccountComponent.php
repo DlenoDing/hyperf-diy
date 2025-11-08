@@ -64,6 +64,7 @@ class WsAccountComponent extends BaseComponent
         //$this->setAccountCache($accountId, $accountInfo);
 
         return $accountInfo;*/
+        return [];
     }
 
     /**

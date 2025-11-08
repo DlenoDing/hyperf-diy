@@ -22,6 +22,9 @@ use Swoole\Websocket\Frame;
 use Hyperf\Context\Context;
 use Hyperf\WebSocketServer\Context as WsContext;
 
+use function Hyperf\Config\config;
+use function Hyperf\Support\env;
+
 /**
  * 消息接收
  * Class WebSocketMessage
@@ -29,11 +32,8 @@ use Hyperf\WebSocketServer\Context as WsContext;
  */
 class WebSocketMessage
 {
-    /**
-     * @Inject()
-     * @var ExceptionHandlerDispatcher
-     */
-    protected $exceptionHandlerDispatcher;
+    #[Inject]
+    protected ExceptionHandlerDispatcher $exceptionHandlerDispatcher;
 
     /**
      * @var array

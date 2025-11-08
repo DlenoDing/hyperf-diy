@@ -8,28 +8,26 @@ use Hyperf\Di\Annotation\Inject;
 use Hyperf\Process\AbstractProcess;
 use Hyperf\Process\Annotation\Process;
 use Hyperf\Process\ProcessManager;
+use Hyperf\Redis\Redis;
 
-/**
- * @Process(name="TestProcess", enableCoroutine=true)
- */
+use function Hyperf\Config\config;
+
+#[Process(name: "TestProcess", enableCoroutine: true)]
 class TestProcess extends AbstractProcess
 {
-    public $name = 'TestProcess';
+    public string $name = 'TestProcess';
 
-    /**
-     * @Inject()
-     * @var \Hyperf\Redis\Redis
-     */
-    protected $redis;
+    #[Inject]
+    protected Redis $redis;
 
     public function handle(): void
     {
-        go(function (){
+        go(function () {
             $i = 0;
             while (true) {
                 var_dump("co[{$i}].....");
                 \Swoole\Coroutine::sleep(3);
-                if ($i>6) {
+                if ($i > 6) {
                     break;
                 }
                 $i++;

@@ -9,8 +9,10 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+use function Hyperf\Support\env;
+
 $processes = [];
 if (env('ENABLE_CRONTAB', false)) {
-    $processes[] = Hyperf\Crontab\Process\CrontabDispatcherProcess::class;
+    $processes[] = \Hyperf\Crontab\Process\CrontabDispatcherProcess::class;
 }
 return $processes;

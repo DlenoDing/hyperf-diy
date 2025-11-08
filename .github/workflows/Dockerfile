@@ -5,7 +5,7 @@
 # @contact  group@hyperf.io
 # @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
 
-FROM registry.cn-hangzhou.aliyuncs.com/dleno-server/php:alp321-php84-sw6.1.0
+FROM hyperf/hyperf:8.3-alpine-v3.19-swoole
 LABEL maintainer="Hyperf Developers <group@hyperf.io>" version="1.0" license="MIT" app.name="Hyperf"
 
 ##
@@ -13,11 +13,10 @@ LABEL maintainer="Hyperf Developers <group@hyperf.io>" version="1.0" license="MI
 ##
 # --build-arg timezone=Asia/Shanghai
 ARG timezone
-ARG APP_ENV
 
-ENV APP_ENV=${APP_ENV:-"local"}
-ENV TIMEZONE=${timezone:-"Asia/Shanghai"}
-ENV SCAN_CACHEABLE=(true)
+ENV TIMEZONE=${timezone:-"Asia/Shanghai"} \
+    APP_ENV=prod \
+    SCAN_CACHEABLE=(true)
 
 # update
 RUN set -ex \
@@ -39,11 +38,6 @@ RUN set -ex \
     && echo "${TIMEZONE}" > /etc/timezone \
     # ---------- clear works ----------
     && rm -rf /var/cache/apk/* /tmp/* /usr/share/man \
-    && cd /opt/www \
-    #创建系统日志文件夹
-    && mkdir -p /opt/www/runtime \
-    #日志目录权限开放
-    && chmod 0777 /opt/www/runtime -R \
     && echo -e "\033[42;37m Build Completed :).\033[0m\n"
 
 WORKDIR /opt/www
@@ -53,19 +47,8 @@ WORKDIR /opt/www
 # RUN composer install --no-dev --no-scripts
 
 COPY . /opt/www
-RUN  cd /opt/www \
-     #&& composer config -g repos.packagist composer https://mirrors.cloud.tencent.com/composer/ \
-     #&& composer config -g repos.packagist composer https://mirrors.aliyun.com/composer/ \
-     #&& composer config -g repos.packagist composer https://packagist.org \
-     && composer install --no-dev -o && php bin/hyperf.php
+RUN print "\n" | composer install -o && php bin/hyperf.php
 
-EXPOSE 9504 9505
+EXPOSE 9501
 
 ENTRYPOINT ["php", "/opt/www/bin/hyperf.php", "start"]
-
-#热重载
-#php bin/hyperf.php server:watch
-#强制结束所有进程
-#kill -9 $(ps -ef|grep Server|grep -v grep|awk '{print $2}')
-
-

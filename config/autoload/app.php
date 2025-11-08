@@ -2,11 +2,13 @@
 
 use App\Conf\ApiRequestConf;
 
+use function Hyperf\Support\env;
+
 return [
     //默认时区
     'default_time_zone'     => env('DATE_DEFAULT_TIMEZONE', 'Asia/Shanghai'),
     // 路由总前缀;设置后，路由地址前统一加这个前缀访问
-    'route_perfix'          => env('ROUTE_PERFIX', ''),
+    'route_prefix'          => env('ROUTE_PREFIX', ''),
     // 路由总后缀;设置后，路由地址前统一加这个后缀访问
     'route_suffix'          => env('ROUTE_SUFFIX', ''),
     //API是否开启数据加密

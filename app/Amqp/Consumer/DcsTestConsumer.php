@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Amqp\Consumer;
 
 use Hyperf\Amqp\Annotation\Consumer;
@@ -6,12 +7,13 @@ use Hyperf\Amqp\Result;
 use Dleno\CommonCore\Base\Amqp\BaseConsumer;
 use Dleno\CommonCore\Tools\Server;
 
-/**
- * @Consumer(exchange="DcsTestExchange", name ="DcsTestConsumer", nums=1)
- */
+use function Hyperf\Config\config;
+use function Hyperf\Support\env;
+
+#[Consumer(exchange: "DcsTestExchange", name: "DcsTestConsumer", nums: 1)]
 class DcsTestConsumer extends BaseConsumer
 {
-    protected $poolName = 'consumer';
+    protected string $poolName = 'consumer';
 
     /**
      * 设置死信后，消息超过指定时间未消费或队列超过时间未活动，则会将对应的消息或队列全部转移到死信里去
@@ -40,7 +42,7 @@ class DcsTestConsumer extends BaseConsumer
      * @param $data
      * @return string
      */
-    public function consume($data): string
+    public function consume($data): Result
     {
         if (!parent::checkRunning()) {
             return Result::REQUEUE;//不处理，重新入队列

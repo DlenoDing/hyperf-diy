@@ -4,10 +4,12 @@
 *.patch
 .idea/
 .git/
-/runtime/
-/vendor/
+runtime/
+vendor/
 .phpintel/
 .DS_Store
-*.lock
 .phpunit*
-/.env.local
+*.cache
+.vscode/
+*.lock
+.env.local

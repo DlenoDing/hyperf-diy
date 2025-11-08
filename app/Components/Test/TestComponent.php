@@ -8,8 +8,6 @@ use App\Components\BaseComponent;
 use App\Components\Test\Object\TestObject;
 use App\Model\Test;
 use Dleno\CommonCore\Exception\AppException;
-use Hyperf\Di\Annotation\Inject;
-use Hyperf\Redis\Redis;
 
 /**
  * 封装测试组件.
@@ -23,12 +21,6 @@ class TestComponent extends BaseComponent
     private static $cacheTimeout = 30;//秒
     private static $cacheData    = [];
     private static $cacheTimes   = [];
-
-    /**
-     * @Inject()
-     * @var Redis
-     */
-    public $redis;
 
     /**
      * 获取对应数据(可设置多层级本地缓存，通过下面的数组维度控制)

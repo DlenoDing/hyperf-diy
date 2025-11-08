@@ -8,20 +8,12 @@ use Dleno\CommonCore\Tools\Server;
 use Hyperf\Amqp\Annotation\Producer;
 use Dleno\CommonCore\Base\Amqp\BaseProducer;
 
-/**
- * @Producer(exchange="", routingKey="")
- */
+#[Producer(exchange:"", routingKey:"")]
 class DcsTestProducer extends BaseProducer
 {
-    /**
-     * @var string
-     */
-    protected $exchange = 'DcsTestExchange';//交换机key(注解优先，需要动态设置时，则不能要注解)
+    protected string $exchange = 'DcsTestExchange';//交换机key(注解优先，需要动态设置时，则不能要注解)
 
-    /**
-     * @var string
-     */
-    protected $routingKey = 'DcsTestRouting';//路由key(注解优先，需要动态设置时，则不能要注解)
+    protected array|string $routingKey = 'DcsTestRouting';//路由key(注解优先，需要动态设置时，则不能要注解)
 
     /**
      * 是否延迟消息交换机(生产者消费者要对应)

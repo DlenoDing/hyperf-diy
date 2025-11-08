@@ -9,6 +9,10 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+
+use function Hyperf\Support\env;
+use function Hyperf\Support\value;
+
 return [
     'handler' => value(
         function () {
@@ -33,15 +37,6 @@ return [
                     \Dleno\CommonCore\Exception\Handler\Websocket\AppExceptionHandler::class,//APP异常控制器
                     \Dleno\CommonCore\Exception\Handler\Websocket\ServerExceptionHandler::class,//系统异常控制器
                     \Dleno\CommonCore\Exception\Handler\Websocket\DefaultExceptionHandler::class,//默认异常控制器
-                ];
-            }
-            if (env('ENABLE_RPC', false)) {
-                $handler['jsonrpc'] = [
-                    \Dleno\CommonCore\Exception\Handler\CommonExceptionHandler::class,//公共异常控制器，不中断
-                    \Dleno\CommonCore\Exception\Handler\Rpc\RpcClientRequestExceptionHandler::class,//rpc-client请求异常
-                    \Dleno\CommonCore\Exception\Handler\Rpc\AppExceptionHandler::class,//APP异常控制器
-                    \Dleno\CommonCore\Exception\Handler\Rpc\ServerExceptionHandler::class,//系统异常控制器
-                    \Dleno\CommonCore\Exception\Handler\Rpc\DefaultExceptionHandler::class,//默认异常控制器
                 ];
             }
             return $handler;

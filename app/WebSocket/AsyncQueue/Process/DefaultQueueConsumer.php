@@ -7,12 +7,12 @@ namespace App\WebSocket\AsyncQueue\Process;
 use Dleno\CommonCore\Base\AsyncQueue\BaseQueueConsumer;
 use Hyperf\Process\Annotation\Process;
 
-/**
- * @Process()
- */
+use function Hyperf\Config\config;
+
+#[Process]
 class DefaultQueueConsumer extends BaseQueueConsumer
 {
-    public $queue = 'default';
+    protected string $queue = 'default';
 
     public function isEnable($server): bool
     {

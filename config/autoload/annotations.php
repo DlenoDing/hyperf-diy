@@ -9,7 +9,8 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
-use Hyperf\Utils\Coroutine;
+use function Hyperf\Support\env;
+use function Hyperf\Support\value;
 
 return [
     'scan' => [
@@ -18,21 +19,11 @@ return [
         ],
         'ignore_annotations' => value(function (){
             $ignore = ['mixin'];
-            //未开启RPC时，忽略对应注解，避免报错
-            if (!env('ENABLE_RPC', false)) {
-                $ignore[] = 'Hyperf\RpcServer\Annotation\RpcService';
-            }
-            //未开启TASK功能时，忽略对应注解，避免报错
-            if (!env('ENABLE_TASK', false)) {
-                $ignore[] = 'Hyperf\Task\Annotation\Task';
-            }
             //未开启TASK功能时，忽略对应注解，避免报错
             if (!env('ENABLE_CRONTAB', false)) {
                 $ignore[] = 'Hyperf\Crontab\Annotation\Crontab';
             }
             return $ignore;
         }),
-        'class_map' => [
-        ],
     ],
 ];

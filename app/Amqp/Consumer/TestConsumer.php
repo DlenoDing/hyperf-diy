@@ -8,9 +8,7 @@ use Hyperf\Amqp\Annotation\Consumer;
 use Hyperf\Amqp\Result;
 use Dleno\CommonCore\Base\Amqp\BaseConsumer;
 
-/**
- * @Consumer(exchange="TestExchange", routingKey="TestRouting", queue="TestQueue", name="TestConsumer", nums=1)
- */
+#[Consumer(exchange:"TestExchange", routingKey:"TestRouting", queue:"TestQueue", name:"TestConsumer", nums:1)]
 class TestConsumer extends BaseConsumer
 {
     protected $poolName = 'consumer';

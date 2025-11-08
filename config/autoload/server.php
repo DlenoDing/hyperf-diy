@@ -2,8 +2,21 @@
 
 declare(strict_types=1);
 
-use Hyperf\Server\Server;
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://hyperf.wiki
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ */
+
 use Hyperf\Server\Event;
+use Hyperf\Server\Server;
+use Swoole\Constant;
+
+use function Hyperf\Support\env;
+use function Hyperf\Support\value;
 
 return [
     //todo 启用ws服务时必须使用SWOOLE_BASE模式（否则客户端FD数据会有问题），其他类型服务可根据实际需求选择，如SWOOLE_PROCESS
@@ -25,7 +38,11 @@ return [
                         //work达到此请求数量，进程关闭并重启(非特殊需求不建议设置)
                         //内存溢出时可临时设置解决，但每次进程重启会导致正在执行的协程全部中断
                         'max_request' => (int)env("MAX_REQUEST", 0),
-                    ]
+                    ],
+                    'options'   => [
+                        // Whether to enable request lifecycle event
+                        'enable_request_lifecycle' => false,
+                    ],
                 ];
             }
             if (env('ENABLE_WS', false)) {
@@ -46,27 +63,6 @@ return [
                         'open_websocket_ping_frame'  => true,//启用 WebSocket 协议中 Ping 帧（自行处理心跳回复及对应逻辑）
                         'open_websocket_pong_frame'  => true,
                         'websocket_compression'      => env('WEBSOCKET_COMPRESSION', false),//启用帧压缩
-                    ]
-                ];
-            }
-            if (env('ENABLE_RPC', false)) {
-                $servers[] = [
-                    'name'      => 'jsonrpc',
-                    'type'      => Server::SERVER_BASE,
-                    'host'      => '0.0.0.0',
-                    'port'      => (int)env("RPC_PORT", 9506),
-                    'sock_type' => SWOOLE_SOCK_TCP,
-                    'callbacks' => [
-                        Event::ON_RECEIVE => [\Hyperf\JsonRpc\TcpServer::class, 'onReceive'],
-                    ],
-                    'settings'  => [
-                        'open_eof_split'     => true,
-                        'package_eof'        => "\r\n",
-                        //'open_length_check' => true,
-                        //'package_length_type' => 'N',
-                        //'package_length_offset' => 0,
-                        //'package_body_offset' => 4,
-                        'package_max_length' => 1024 * 1024 * 2,
                     ],
                 ];
             }
@@ -76,41 +72,30 @@ return [
     'settings'  => value(
         function () {
             $settings = [
-                'enable_coroutine'    => true,
-                'worker_num'          => (int)env("WORK_NUM", swoole_cpu_num()),
-                'pid_file'            => BASE_PATH . '/runtime/hyperf.pid',
-                'open_tcp_nodelay'    => true,
-                'max_coroutine'       => (int)env("MAX_COROUTINE", 100000),
-                'open_http2_protocol' => true,
-                'socket_buffer_size'  => 2 * 1024 * 1024,
-                'buffer_output_size'  => 2 * 1024 * 1024,
-                'reactor_num'         => swoole_cpu_num() * 4,
-                'backlog'             => 512,//最多同时有多少个等待 accept 的连接;PROCESS 模式不需要
-                //上传文件大小限制
-                'package_max_length'  => 1 * 1024 * 1024, //1M
-                //'max_wait_time' => 60,
+                Constant::OPTION_ENABLE_COROUTINE    => true,
+                Constant::OPTION_WORKER_NUM          => (int)env("WORK_NUM", swoole_cpu_num()),
+                Constant::OPTION_PID_FILE            => BASE_PATH . '/runtime/hyperf.pid',
+                Constant::OPTION_OPEN_TCP_NODELAY    => true,
+                Constant::OPTION_MAX_COROUTINE       => (int)env("MAX_COROUTINE", 100000),
+                Constant::OPTION_OPEN_HTTP2_PROTOCOL => true,
+                Constant::OPTION_MAX_REQUEST         => 100000,
+                Constant::OPTION_SOCKET_BUFFER_SIZE  => 2 * 1024 * 1024,
+                Constant::OPTION_BUFFER_OUTPUT_SIZE  => 2 * 1024 * 1024,
+                Constant::OPTION_REACTOR_NUM         => swoole_cpu_num() * 4,
+                Constant::OPTION_BACKLOG             => 512,//最多同时有多少个等待 accept 的连接;PROCESS 模式不需要
+                Constant::OPTION_PACKAGE_MAX_LENGTH  => 1 * 1024 * 1024, //上传文件大小限制 1M
+                Constant::OPTION_MAX_WAIT_TIME       => 60,
                 //'reload_async' => true,
             ];
-            if (env('ENABLE_TASK', false)) {
-                // Task Worker 数量，根据您的服务器配置而配置适当的数量
-                $settings['task_worker_num'] = env('TASK_WORK_NUM') ?: swoole_cpu_num();
-                // 因为 `Task` 主要处理无法协程化的方法，所以这里推荐设为 `false`，避免协程下出现数据混淆的情况
-                $settings['task_enable_coroutine'] = env('TASK_ENABLE_COROUTINE', false);
-            }
             return $settings;
         }
     ),
-    'callbacks' => value(function (){
+    'callbacks' => value(function () {
         $callbacks = [
             Event::ON_WORKER_START => [Hyperf\Framework\Bootstrap\WorkerStartCallback::class, 'onWorkerStart'],
             Event::ON_PIPE_MESSAGE => [Hyperf\Framework\Bootstrap\PipeMessageCallback::class, 'onPipeMessage'],
             Event::ON_WORKER_EXIT  => [Hyperf\Framework\Bootstrap\WorkerExitCallback::class, 'onWorkerExit'],
         ];
-        if (env('ENABLE_TASK', false)) {
-            // Task callbacks
-            $callbacks[Event::ON_TASK] = [Hyperf\Framework\Bootstrap\TaskCallback::class, 'onTask'];
-            $callbacks[Event::ON_FINISH] = [Hyperf\Framework\Bootstrap\FinishCallback::class, 'onFinish'];
-        }
         return $callbacks;
     }),
 ];

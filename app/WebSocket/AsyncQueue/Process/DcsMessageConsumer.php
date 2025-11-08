@@ -8,9 +8,9 @@ use App\WebSocket\Components\WsPushMsgComponent;
 use Dleno\CommonCore\Base\AsyncQueue\BaseQueueConsumer;
 use Hyperf\Process\Annotation\Process;
 
-/**
- * @Process()
- */
+use function Hyperf\Config\config;
+
+#[Process]
 class DcsMessageConsumer extends BaseQueueConsumer
 {
     public function getQueue()

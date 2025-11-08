@@ -9,10 +9,13 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+
 namespace HyperfTest;
 
 use Hyperf\Testing\Client;
 use PHPUnit\Framework\TestCase;
+
+use function Hyperf\Support\make;
 
 /**
  * Class HttpTestCase.

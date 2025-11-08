@@ -10,20 +10,18 @@ use Hyperf\Di\Annotation\Inject;
 use Hyperf\Process\Annotation\Process;
 use Hyperf\Process\AbstractProcess;
 use Hyperf\Process\ProcessManager;
+use Hyperf\Redis\Redis;
 
+use function Hyperf\Config\config;
+use function Hyperf\Support\env;
 
-/**
- * @Process()
- */
+#[Process]
 class WsServerProcess extends AbstractProcess
 {
-    public $name = 'WebSocketServerProcess';
+    public string $name = 'WebSocketServerProcess';
 
-    /**
-     * @Inject()
-     * @var \Hyperf\Redis\Redis
-     */
-    protected $redis;
+    #[Inject]
+    protected Redis $redis;
 
     public function handle(): void
     {

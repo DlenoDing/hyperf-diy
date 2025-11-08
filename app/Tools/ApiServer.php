@@ -3,11 +3,13 @@
 namespace App\Tools;
 
 use Hyperf\HttpServer\Contract\RequestInterface;
-use Hyperf\Utils\Context;
+use Hyperf\Context\Context;
 use Dleno\CommonCore\Tools\Server;
 use Dleno\CommonCore\Tools\Crypt\OpenSslRsa;
 use App\Conf\ApiRequestConf;
 use Psr\Http\Message\ServerRequestInterface;
+
+use function Hyperf\Config\config;
 
 class ApiServer
 {

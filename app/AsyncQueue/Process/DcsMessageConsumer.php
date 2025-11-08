@@ -8,15 +8,14 @@ use Dleno\CommonCore\Base\AsyncQueue\BaseQueueConsumer;
 use Dleno\CommonCore\Tools\Server;
 use Hyperf\Process\Annotation\Process;
 
-/**
- * 暂时不需要
- * @Process()
- */
+use function Hyperf\Config\config;
+
+#[Process]
 class DcsMessageConsumer extends BaseQueueConsumer
 {
     const QUEUE_MESSAGE_PREFIX = '';
 
-    protected $reloadChannel = ['timeout', 'failed'];
+    protected array $reloadChannel = ['timeout', 'failed'];
 
 
     public function getQueue()

@@ -14,25 +14,25 @@ namespace App\Model;
  */
 class Test extends BaseModel
 {
-    protected $primaryKey = 'app_id';
+    protected string $primaryKey = 'app_id';
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'test';
+    protected ?string $table = 'test';
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['id', 'key', 'attr1', 'attr2', 'attr3', 'create_time', 'update_time'];
+    protected array $fillable = ['id', 'key', 'attr1', 'attr2', 'attr3', 'create_time', 'update_time'];
     /**
      * The attributes that should be cast to native types.
      *
      * @var array
      */
-    protected $casts = ['id' => 'integer', 'attr1' => 'integer'];
+    protected array $casts = ['id' => 'integer', 'attr1' => 'integer'];
 
     public function getId()
     {

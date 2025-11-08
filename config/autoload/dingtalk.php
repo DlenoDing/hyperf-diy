@@ -1,5 +1,7 @@
 <?php
 
+use function Hyperf\Support\env;
+
 return [
     //异常追踪机器人配置(为空或对应配置不存在)
     'trace'   => 'trace',

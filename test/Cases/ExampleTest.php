@@ -9,19 +9,19 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+
 namespace HyperfTest\Cases;
 
-use HyperfTest\HttpTestCase;
+use Hyperf\Testing\TestCase;
 
 /**
  * @internal
  * @coversNothing
  */
-class ExampleTest extends HttpTestCase
+class ExampleTest extends TestCase
 {
     public function testExample()
     {
-        $this->assertTrue(true);
-        $this->assertTrue(is_array($this->get('/')));
+        $this->get('/')->assertOk()->assertSee('Hyperf');
     }
 }

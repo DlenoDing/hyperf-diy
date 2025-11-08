@@ -6,6 +6,8 @@ use App\Components\BaseComponent;
 use App\WebSocket\Conf\WsServerConf;
 use Dleno\CommonCore\Tools\Server;
 
+use function Hyperf\Config\config;
+
 /**
  * Class WsServerComponent
  * @package App\WebSocket\Components

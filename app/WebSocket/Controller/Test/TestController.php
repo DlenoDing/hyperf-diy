@@ -8,9 +8,7 @@ use App\WebSocket\Controller\BaseController;
 use App\WebSocket\Service\Test\TestService;
 use Dleno\CommonCore\Annotation\WsController;
 
-/**
- * @WsController()
- */
+#[WsController]
 class TestController extends BaseController
 {
     /**

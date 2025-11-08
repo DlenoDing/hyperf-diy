@@ -7,10 +7,10 @@ use App\Service\Test\TestService;
 use Hyperf\HttpServer\Annotation\AutoController;
 
 /**
- * @AutoController()
  * Class TestController
  * @package App\Controller
  */
+#[AutoController]
 class TestController extends BaseController
 {
     /**
