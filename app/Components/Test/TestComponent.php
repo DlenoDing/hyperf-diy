@@ -60,10 +60,9 @@ class TestComponent extends BaseComponent
                         ->where('key', $key)
                         ->first();
             $data = $data ? $data->toArray() : [];
-            if (empty($data)) {
-                throw new AppException('DATA IS NOT EXISTS!');
+            if (!empty($data)) {
+                $this->setCacheData($key, $data);
             }
-            $this->setCacheData($key, $data);
         }
 
         return (new TestObject())->fill($data);
