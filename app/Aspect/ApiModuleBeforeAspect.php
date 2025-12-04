@@ -118,7 +118,6 @@ class ApiModuleBeforeAspect extends AbstractAspect
         if (CheckVal::checkInStatus(GlobalConf::WHITE_TYPE_SIGN, $whiteVal)) {
             return;
         }
-        $traceId = Server::getTraceId();
         //检查时间有效期
         $now  = time();
         $time = get_header_val('Client-Timestamp', 0);
@@ -126,7 +125,7 @@ class ApiModuleBeforeAspect extends AbstractAspect
         if ($time < $now - SignConf::EXPIRE_TIME || $time > $now + SignConf::EXPIRE_TIME) {
             Logger::systemLog('SIGN')
                   ->debug(
-                      sprintf('Trace-Id::%s||Message::%s', $traceId, "鉴权时间戳无效：[{$now}|{$time}]")
+                      sprintf('Message::%s', "鉴权时间戳无效：[{$now}|{$time}]")
                   );
             throw new HttpException('Error Sign', RcodeConf::ERROR_SIGN);
         }
@@ -151,8 +150,7 @@ class ApiModuleBeforeAspect extends AbstractAspect
             Logger::systemLog('SIGN')
                   ->debug(
                       sprintf(
-                          'Trace-Id::%s||Message::%s||SignStr::%s',
-                          $traceId,
+                          'Message::%s||SignStr::%s',
                           "签名无效：[{$sign}|" . get_header_val('Client-Sign', '') . "]",
                           $str
                       )
