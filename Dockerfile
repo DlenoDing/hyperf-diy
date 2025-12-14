@@ -19,6 +19,8 @@ ENV APP_ENV=${APP_ENV:-"local"}
 ENV TIMEZONE=${timezone:-"Asia/Shanghai"}
 ENV SCAN_CACHEABLE=(true)
 
+COPY . /opt/www
+
 # update
 RUN set -ex \
     # show php version and extensions
@@ -52,7 +54,6 @@ WORKDIR /opt/www
 # COPY ./composer.* /opt/www/
 # RUN composer install --no-dev --no-scripts
 
-COPY . /opt/www
 RUN  cd /opt/www \
      #&& composer config -g repos.packagist composer https://mirrors.cloud.tencent.com/composer/ \
      #&& composer config -g repos.packagist composer https://mirrors.aliyun.com/composer/ \
