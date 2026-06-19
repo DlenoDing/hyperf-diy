@@ -104,7 +104,7 @@ class ApiModuleBeforeAspect extends AbstractAspect
     private function checkSign($whiteVal)
     {
         //开关检查
-        if (!config('app.api_check_sigin')) {
+        if (!config('app.api_check_sign')) {
             return;
         }
         //非正式环境debug

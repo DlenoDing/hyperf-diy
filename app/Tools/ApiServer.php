@@ -29,9 +29,9 @@ class ApiServer
                 if (Context::has(ServerRequestInterface::class)) {
                     $request = get_inject_obj(ServerRequestInterface::class);
                     $path    = explode('/', $request->path());
-                    if (!empty(config('app.route_perfix'))) {
-                        $perfix = explode('/', trim(config('app.route_perfix'), '/'));
-                        foreach ($perfix as $k => $pf) {
+                    if (!empty(config('app.route_prefix'))) {
+                        $prefix = explode('/', trim(config('app.route_prefix'), '/'));
+                        foreach ($prefix as $k => $pf) {
                             if ($pf == $path[$k]) {
                                 unset($path[$k]);
                             }
