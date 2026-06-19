@@ -15,8 +15,8 @@ return [
     'api_data_crypt'        => env('API_DATA_CRYPT', false),
     //API是否开启接口鉴权
     'api_check_sign'       => env('API_CHECK_SIGN', false),
-    //管理后台模块名称
-    'admin_module_name'     => env('ADMIN_MODULE_NAME', ''),
+    //管理后台模块名称(默认 admin,判断不区分大小写;留空亦回落 admin)
+    'admin_module_name'     => env('ADMIN_MODULE_NAME', 'admin'),
     //允许跨协程自动复制的context key(创建协程时会自动将当前协程对应的值复制到子协程)
     'global_context'        => array_merge(
         \Dleno\CommonCore\Conf\GlobalContextConf::$globalContext,
