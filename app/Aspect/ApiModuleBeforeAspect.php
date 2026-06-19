@@ -2,7 +2,7 @@
 
 namespace App\Aspect;
 
-use App\Tools\ApiServer;
+use Dleno\CommonCore\Tools\ApiServer;
 use Dleno\CommonCore\Conf\GlobalConf;
 use Dleno\CommonCore\Tools\Check\CheckVal;
 use Hyperf\Di\Annotation\Aspect;
@@ -11,7 +11,7 @@ use Hyperf\Di\Annotation\Aspect;
  * API 模块前置切面（签名校验/数据解密等公共逻辑见 AbstractModuleBeforeAspect）
  */
 #[Aspect]
-class ApiModuleBeforeAspect extends AbstractModuleBeforeAspect
+class ApiModuleBeforeAspect extends AppModuleBeforeAspect
 {
     /**
      * 仅处理非后台（API）模块请求

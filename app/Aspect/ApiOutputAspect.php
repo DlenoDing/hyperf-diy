@@ -2,7 +2,7 @@
 
 namespace App\Aspect;
 
-use App\Tools\ApiServer;
+use Dleno\CommonCore\Tools\ApiServer;
 use Dleno\CommonCore\Conf\RequestConf;
 use Hyperf\Context\Context;
 use Hyperf\Di\Annotation\Aspect;

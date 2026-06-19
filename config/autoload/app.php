@@ -1,6 +1,7 @@
 <?php
 
 use App\Conf\ApiRequestConf;
+use Dleno\CommonCore\Conf\RequestConf;
 
 use function Hyperf\Support\env;
 
@@ -22,9 +23,9 @@ return [
         \Dleno\CommonCore\Conf\GlobalContextConf::$globalContext,
         [
             //其他需求定义
-            ApiRequestConf::REQUEST_ADMIN_MODULE,
-            ApiRequestConf::REQUEST_ROUTE_VAL,
-            ApiRequestConf::REQUEST_AES_KEY,
+            RequestConf::REQUEST_ADMIN_MODULE,
+            RequestConf::REQUEST_ROUTE_VAL,
+            RequestConf::REQUEST_AES_KEY,
             ApiRequestConf::REQUEST_USER_INFO,
             ApiRequestConf::REQUEST_USER_ID,
             //其他需求定义
