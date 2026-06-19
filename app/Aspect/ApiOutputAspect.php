@@ -3,7 +3,10 @@
 namespace App\Aspect;
 
 use Dleno\CommonCore\Tools\ApiServer;
+use Dleno\CommonCore\Conf\RcodeConf;
 use Dleno\CommonCore\Conf\RequestConf;
+use Dleno\CommonCore\Tools\Logger;
+use Dleno\CommonCore\Tools\OutPut;
 use Hyperf\Context\Context;
 use Hyperf\Di\Annotation\Aspect;
 use Hyperf\Di\Aop\AbstractAspect;
@@ -57,14 +60,18 @@ class ApiOutputAspect extends AbstractAspect
                         try {
                             $output = OpenSslCrypt::encrypt($output, ApiServer::getClientAesKey());
                         } catch (\Throwable $e) {
-                            $output = 'ClientKey Is Error';
+                            //加密失败(多为客户端 AES Key 缺失/无效):内部异常仅记日志,
+                            //对外返回标准错误 JSON(明文,客户端此时本就无有效 key 解密)
+                            Logger::systemLog('ENCRYPT')->warning($e->getMessage());
+                            $output = OutPut::outJsonToError('Encrypt Error', RcodeConf::ERROR_SERVER);
                         }
                         $result = $result->withBody(new \Hyperf\HttpMessage\Stream\SwooleStream($output));
                     } else {
                         try {
                             $result = OpenSslCrypt::encrypt($result, ApiServer::getClientAesKey());
                         } catch (\Throwable $e) {
-                            $result = 'ClientKey Is Error';
+                            Logger::systemLog('ENCRYPT')->warning($e->getMessage());
+                            $result = OutPut::outJsonToError('Encrypt Error', RcodeConf::ERROR_SERVER);
                         }
                     }
                 }
