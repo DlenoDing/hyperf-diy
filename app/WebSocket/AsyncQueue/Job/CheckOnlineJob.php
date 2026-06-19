@@ -33,8 +33,10 @@ class CheckOnlineJob extends BaseJob
         $wssCpt    = get_inject_obj(WsServerComponent::class);
         $serverKey = $wssCpt->getServerKey();
         $redis     = get_inject_obj(Redis::class);
-        if ($this->fds == '-1') {
-            //检查当前服务器的所有人
+
+        if ($this->fds === '-1' || $this->fds === -1) {
+            //检查当前服务器的所有人:先汇总全部记录的客户端,再一次批量核验
+            $all    = [];
             $cursor = null;
             while (true) {
                 $clients = $wssCpt->getClients($cursor, 100);
@@ -42,31 +44,39 @@ class CheckOnlineJob extends BaseJob
                     break;
                 }
                 foreach ($clients as $fd) {
-                    try {
-                        $online = CheckFd::check($fd);
-                        $this->setOnline($redis, $serverKey, $fd, $online);
-                    } catch (\Throwable $e) {
-                        Logger::businessLog('CHECK-FD')
-                              ->info(array_to_json(['msg' => $e->getMessage()]));
-                    }
+                    $all[] = (int)$fd;
                 }
             }
+            $this->checkAndSet($redis, $serverKey, $all);
         } else {
-            if (!is_array($this->fds)) {
-                $this->fds = [$this->fds];
-            }
-            try {
-                foreach ($this->fds as $fd) {
-                    $online = CheckFd::check($fd);
-                    $this->setOnline($redis, $serverKey, $fd, $online);
-                }
-            } catch (\Throwable $e) {
-                Logger::businessLog('CHECK-FD')
-                      ->info(array_to_json(['msg' => $e->getMessage()]));
-            }
+            $fds = is_array($this->fds) ? $this->fds : [$this->fds];
+            $this->checkAndSet($redis, $serverKey, $fds);
         }
 
         return true;
+    }
+
+    /**
+     * 一次批量检查并写回结果(内部按 CHUNK 分轮、全员应答)。
+     * @param int[] $fds
+     */
+    private function checkAndSet(Redis $redis, $serverKey, array $fds): void
+    {
+        if (empty($fds)) {
+            return;
+        }
+        try {
+            $result = CheckFd::check($fds);//[fd => true|false|null]
+            foreach ($result as $fd => $online) {
+                if ($online === null) {
+                    continue;//未知状态(超时未收齐):不写明确结果,交由上层超时/重试,避免误判离线
+                }
+                $this->setOnline($redis, $serverKey, $fd, $online);
+            }
+        } catch (\Throwable $e) {
+            Logger::businessLog('CHECK-FD')
+                  ->info(array_to_json(['msg' => $e->getMessage()]));
+        }
     }
 
     private function setOnline(Redis $redis, $serverKey, $fd, $online)

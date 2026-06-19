@@ -65,41 +65,65 @@ class WsPushMsgComponent extends BaseComponent
         foreach ($uids as $uid) {
             $parallel->add(
                 function () use ($wstkCpt, $servers, $uid) {
-                    $online    = false;
                     $uidBinds = $wstkCpt->getAccountIdBind($uid);
-                    if (!empty($uidBinds)) {
-                        foreach ($uidBinds as $token => $token2Fd) {
-                            $token2Fd = json_to_array($token2Fd);
-                            if (!in_array($token2Fd['sv'], $servers)) {
-                                $wstkCpt->delAccountIdBind($uid, $token);//对应服务器已无效,删除指定token关系
-                                continue;
-                            }
-                            //分发到对应服务器的消息队列
-                            $job = (new CheckOnlineJob($token2Fd['fd']))->setQueue(self::getQueue($token2Fd['sv']));
-                            AsyncQueue::push($job);
-                            //检查结果
-                            $checkKey = self::getCheckKey($token2Fd['sv'], $token2Fd['fd']);
-                            try {
-                                $check = wait(function () use ($checkKey) {
-                                    $i = 0;
-                                    while (!$this->redis->exists($checkKey) && ($i++) < 500) {
-                                        usleep(10000);
-                                    }
-                                    $check = $this->redis->get($checkKey);
-                                    $this->redis->del($checkKey);
-                                    return $check;
-                                }, 2.0);
-                                if ($check) {
-                                    //检查到其中一个在线则跳出不再检查
-                                    $online = true;
-                                    break;
-                                }
-                            } catch (\Throwable $e) {
-                                //
-                            }
-                        }
+                    if (empty($uidBinds)) {
+                        return false;
                     }
-                    return $online;
+                    //按服务器聚合该用户的全部 fd(同一服务器的多设备合并为一个批量任务)
+                    $svFds = [];//sv => [fd, ...]
+                    $polls = [];//[ ['sv'=>, 'fd'=>], ... ]
+                    foreach ($uidBinds as $token => $token2Fd) {
+                        $token2Fd = json_to_array($token2Fd);
+                        $sv = $token2Fd['sv'];
+                        $fd = $token2Fd['fd'];
+                        if (!in_array($sv, $servers)) {
+                            $wstkCpt->delAccountIdBind($uid, $token);//对应服务器已无效,删除指定token关系
+                            continue;
+                        }
+                        $svFds[$sv][] = $fd;
+                        $polls[]      = ['sv' => $sv, 'fd' => $fd];
+                    }
+                    if (empty($polls)) {
+                        return false;
+                    }
+                    //先清除历史结果 key,避免上一次"提前命中即返回"残留的 stale 结果干扰本次判定
+                    foreach ($polls as $p) {
+                        $this->redis->del(self::getCheckKey($p['sv'], $p['fd']));
+                    }
+                    //每个服务器一个批量任务(该用户在该服务器上的全部 fd)
+                    foreach ($svFds as $sv => $fds) {
+                        $job = (new CheckOnlineJob($fds))->setQueue(self::getQueue($sv));
+                        AsyncQueue::push($job);
+                    }
+                    //轮询结果:任一 fd 在线即判该用户在线
+                    try {
+                        return (bool)wait(function () use ($polls) {
+                            $pending = [];
+                            foreach ($polls as $p) {
+                                $pending[$p['sv'] . ':' . $p['fd']] = self::getCheckKey($p['sv'], $p['fd']);
+                            }
+                            $i = 0;
+                            while (!empty($pending) && ($i++) < 500) {
+                                foreach ($pending as $id => $key) {
+                                    if ($this->redis->exists($key)) {
+                                        $val = $this->redis->get($key);
+                                        $this->redis->del($key);
+                                        unset($pending[$id]);
+                                        if ($val) {
+                                            return true;//命中在线('1' 真值,'0' 假值)
+                                        }
+                                    }
+                                }
+                                if (empty($pending)) {
+                                    break;//全部已读且无在线
+                                }
+                                \Swoole\Coroutine::sleep(0.01);//协程让出,不阻塞 Worker
+                            }
+                            return false;
+                        }, 2.0);
+                    } catch (\Throwable $e) {
+                        return false;
+                    }
                 },
                 $uid
             );
