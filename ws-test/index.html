@@ -53,14 +53,16 @@
                 retry = true;
                 //当WebSocket创建成功时，触发onopen事件
                 ping = setInterval(function () {
-                    ws.send(0x09);
+                    //文本心跳:发送 "ping",服务端回 "pong"(与服务端 WebSocketEnter 约定一致)
+                    ws.send('ping');
                 }, 10000);
                 $('#ws-send').removeAttr('disabled');
                 $('#ws-close').removeAttr('disabled');
                 $('#ws-connect').attr('disabled', true);
             };
             ws.onmessage = function (e) {
-                if (e.data == '10') {
+                //文本心跳 pong,忽略(与服务端约定:发 "ping" 收 "pong")
+                if (e.data === 'pong') {
                     return;
                 }
                 var datas = $.parseJSON(e.data);

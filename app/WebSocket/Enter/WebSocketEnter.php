@@ -57,20 +57,21 @@ class WebSocketEnter implements OnMessageInterface, OnOpenInterface, OnCloseInte
     {
         //服务器固定时区运行
         date_default_timezone_set(config('app.default_time_zone', 'Asia/Shanghai'));
-        if ($frame->opcode == WEBSOCKET_OPCODE_PING || $frame->data == WEBSOCKET_OPCODE_PING) {
-            if ($frame->data == WEBSOCKET_OPCODE_PING) {
-                //发送内容是文本ping;则直接回复文本pong（兼容浏览器客户端）
-                $pongFrame         = new Frame();
-                $pongFrame->opcode = WEBSOCKET_OPCODE_TEXT;
-                $pongFrame->data   = strval(WEBSOCKET_OPCODE_PONG);
-                $server->push($frame->fd, $pongFrame);
-            } else {
-                // 回复 Pong 帧(真实协议)
-                $pongFrame         = new Frame();
-                $pongFrame->opcode = WEBSOCKET_OPCODE_PONG;
-                $server->push($frame->fd, $pongFrame);
-            }
+        //协议级 Ping 帧 → 回复协议级 Pong
+        if ($frame->opcode === WEBSOCKET_OPCODE_PING) {
+            $pongFrame         = new Frame();
+            $pongFrame->opcode = WEBSOCKET_OPCODE_PONG;
+            $server->push($frame->fd, $pongFrame);
             get_inject_obj(WebSocketMainHeartbeat::class)->handle($server, $frame);
+        //文本 "ping" 心跳(兼容浏览器等无法主动发协议 Ping 的客户端) → 回复文本 "pong"
+        //严格 === 比较,避免业务消息内容恰为数字(如 "9")时被误判为心跳
+        } elseif ($frame->data === 'ping') {
+            $pongFrame         = new Frame();
+            $pongFrame->opcode = WEBSOCKET_OPCODE_TEXT;
+            $pongFrame->data   = 'pong';
+            $server->push($frame->fd, $pongFrame);
+            get_inject_obj(WebSocketMainHeartbeat::class)->handle($server, $frame);
+        //正常业务消息
         } else {
             get_inject_obj(WebSocketMessage::class)->handle($server, $frame);
         }
