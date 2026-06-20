@@ -22,7 +22,7 @@ use Psr\Http\Message\ServerRequestInterface;
  *
  * 其它可按需 override：afterOpen（上线广播/presence）、beforeClose（下线广播）、
  * beforeMessage（逐消息风控）、beforeSend（出站改写）、afterMessage（埋点）等；不 override 即走父类 no-op。
- * 多关注点可各自成类并用 Dleno\CommonCore\Websocket\Hook\CompositeWsHook 组合注入。
+ * 多关注点若要拆分，由业务侧自行各自成类并组合注入。
  */
 class AppWsHook extends AbstractWsHook
 {
