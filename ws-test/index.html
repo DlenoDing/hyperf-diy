@@ -75,10 +75,9 @@
                 }
                 var reqId = datas.reqId;
                 var times = reqData[reqId] ? (getTimestamp() - reqData[reqId]['time']) / 1000 : 0;
-                // var data = $.stringify(datas.data);
-                // console.log(JSON.parse(datas.data));
-                var data = JSON.stringify(JSON.parse(datas.data), null, 2);
-                addRetrunVal(reqId, times, reqData[reqId] ? reqData[reqId]['action'] : '', data);
+                // 归一化信封 {reqId, code, msg, trace, data}; data 已是对象(不再是 JSON 字符串),直接展示整个信封
+                var data = JSON.stringify(datas, null, 2);
+                addRetrunVal(reqId, times, reqData[reqId] ? reqData[reqId]['action'] : '', data, datas.code, datas.msg);
                 reqData[reqId] = null;
             };
             ws.onclose = function (e) {
@@ -177,8 +176,10 @@
         }
     });
 
-    function addRetrunVal(reqId, times, action, data) {
-        $('#ws-return').prepend('<div class="ret-item"><div class="reqId">Response:: reqId:[' + reqId + ']; action:[' + action + ']; times:[' + times + 's]; (' + (new Date()).toLocaleString() + ')</div><div class="data"><pre class="prettyprint">' + data + '</pre></div></div>');
+    function addRetrunVal(reqId, times, action, data, code, msg) {
+        var codeStr = (code === undefined) ? '' : '; code:[' + code + ']';
+        var msgStr = (msg === undefined || msg === '') ? '' : '; msg:[' + msg + ']';
+        $('#ws-return').prepend('<div class="ret-item"><div class="reqId">Response:: reqId:[' + reqId + ']; action:[' + action + ']' + codeStr + msgStr + '; times:[' + times + 's]; (' + (new Date()).toLocaleString() + ')</div><div class="data"><pre class="prettyprint">' + data + '</pre></div></div>');
         PR.prettyPrint();
     }
 
