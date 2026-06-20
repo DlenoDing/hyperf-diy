@@ -16,5 +16,6 @@ $listeners = [
     //异步队列自动重载超时消息
     \Hyperf\AsyncQueue\Listener\ReloadChannelListener::class,
     //Websocket 连接检查监听 OnPipeMessageListener 已由 common-core 的 #[Listener] 注解自动注册,无需在此手动配置
+    //启用 WS 时强制 SWOOLE_BASE 的启动前校验 WsServerModeCheckListener 同样由 common-core 自动注册(非 BASE 直接中止启动)
 ];
 return $listeners;
