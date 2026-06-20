@@ -19,8 +19,10 @@ class TestService extends BaseService
             'str'  => Strings::makeRandStr(16),
         ]);
 
+        //维度名由业务决定:本脚手架默认策略(DefaultWsBindStrategy)按 account_id 寻址。
         $accountId = get_inject_obj(WsAccountComponent::class)->getCurrAccountId();
-        $cpt->pushToUidMessage(
+        $cpt->pushToDimMessage(
+            'account_id',
             $accountId,
             WsServerConf::CMD_TYPE_NOTICE,
             [
@@ -30,7 +32,7 @@ class TestService extends BaseService
             5
         );
         $uids = [1,2,3,4,5,6,7,8,9,10,11,12,13];
-        $onlines = $cpt->checkClientOnline($uids);
+        $onlines = $cpt->checkOnlineByDim('account_id', $uids);
         return [
             't' => get_header_val('Client-Token'),
             'a' => get_header_val('Client-AccountId'),
