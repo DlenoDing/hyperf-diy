@@ -28,6 +28,6 @@ Router::get(
 Router::addServer(
     'ws',
     function () {
-        Router::get('/', 'App\WebSocket\Enter\WebSocketEnter');
+        Router::get('/', 'Dleno\CommonCore\Websocket\Server\WebSocketEnter');
     }
 );

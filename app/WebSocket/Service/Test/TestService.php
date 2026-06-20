@@ -3,7 +3,7 @@
 namespace App\WebSocket\Service\Test;
 
 use App\WebSocket\Components\WsAccountComponent;
-use App\WebSocket\Components\WsPushMsgComponent;
+use Dleno\CommonCore\Websocket\Component\WsPushMsgComponent;
 use App\WebSocket\Conf\WsServerConf;
 use App\WebSocket\Service\BaseService;
 use Dleno\CommonCore\Tools\Strings\Strings;
