@@ -17,7 +17,7 @@ use Psr\Http\Message\ServerRequestInterface;
  * 业务 WS 生命周期钩子（继承 AbstractWsHook，按需 override）。
  *
  * 握手三段钩子（由 common-core WebSocketAuthMiddleware 依次调用 before→on→after）中，
- * **中置 onHandshake 是业务身份解析的落点** —— 取代了原来的 WsIdentityResolver：
+ * **中置 onHandshake 是业务身份解析的落点**：
  * 在这里读 token、解析身份、写 header，无效则抛异常拒绝握手；
  * 解析出的身份只需随 WsHandshakeResult 返回，由中间件统一 WsIdentity::set（业务不写、不会漏）。
  *
@@ -28,7 +28,7 @@ use Psr\Http\Message\ServerRequestInterface;
 class AppWsHook extends AbstractWsHook
 {
     /**
-     * 中置握手钩子：业务身份解析（原 AccountIdentityResolver 逻辑搬到这）。
+     * 中置握手钩子：业务身份解析。
      * 读 token → 解析账户（WsAccountComponent::checkAccountByToken）→ 写 header；无 token / 无 account_id 则抛异常拒绝握手。
      * 返回 WsHandshakeResult(改过的 request + 完整身份)；身份入 Context 由中间件统一执行，业务不必也不能漏写。
      */
@@ -58,7 +58,7 @@ class AppWsHook extends AbstractWsHook
             throw new HttpException('Error Token', RcodeConf::ERROR_TOKEN);
         }
 
-        //返回 改过的 request + 完整身份(resolveByToken 返回 + token);中间件会 WsIdentity::set,供 setBind→bindDimensions 取任意维度
+        //返回 改过的 request + 完整身份(账户字段 + token);中间件会 WsIdentity::set,供 setBind→bindDimensions 取任意维度
         return new WsHandshakeResult($request, array_merge($account, ['token' => $clientToken]));
     }
 }

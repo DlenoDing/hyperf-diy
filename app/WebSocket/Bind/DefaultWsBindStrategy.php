@@ -10,7 +10,7 @@ use Dleno\CommonCore\Websocket\Contract\WsBindStrategyInterface;
  * WS 连接绑定策略 —— 脚手架自带的默认实现。
  *
  * 「绑哪些维度、哪些维度可被定向寻址」属于业务决策（各项目不同），故默认实现放在业务端、由 dependencies.php 绑定；
- * common-core 只持有契约 {@see WsBindStrategyInterface}，不再提供包内默认。
+ * common-core 只持有契约 {@see WsBindStrategyInterface}，不提供包内默认实现。
  *
  * 本默认实现：**只绑 account_id 一个维度**，并以 account_id 作为唯一可寻址维度
  * —— 即"按用户 account_id 反查其全部在线连接"，覆盖最常见的单端/多连接同账号场景。
@@ -34,7 +34,7 @@ class DefaultWsBindStrategy implements WsBindStrategyInterface
      * @param int   $fd       本次连接的 Swoole 文件描述符（连接的本机唯一标识；通常无需用到，
      *                        预留给"维度值依赖具体连接"的特殊策略）。
      * @param array $identity 握手鉴权阶段解析出的身份，至少含：
-     *                        - account_id：用户/账号 id（由 WsIdentityResolver 解析、写入握手头后取得）
+     *                        - account_id：用户/账号 id（由 AppWsHook::onHandshake 解析身份后取得）
      *                        - token：本次连接的登录票据
      *                        业务自定义策略若需更多维度（如 device/client_type），
      *                        可让鉴权侧把对应信息放进身份/请求头，并在此读取拼进返回值。
