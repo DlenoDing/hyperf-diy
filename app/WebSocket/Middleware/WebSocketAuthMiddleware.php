@@ -96,6 +96,10 @@ class WebSocketAuthMiddleware implements MiddlewareInterface
         Context::set(ServerRequestInterface::class, $request);
         //后续该fd全局使用
         WsContext::set(ServerRequestInterface::class, $request);
+        //存完整身份(resolveByToken 返回 + token),供 setBind→WsBindStrategy::bindDimensions 取用自定义维度
+        \Dleno\CommonCore\Websocket\Support\WsIdentity::set(
+            array_merge($account, ['token' => $clientToken])
+        );
 
         //后置钩子(默认 no-op;身份已解析+Context 已写)
         $this->wsHook->afterHandshake($request, $account);
