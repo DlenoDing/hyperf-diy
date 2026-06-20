@@ -5,8 +5,7 @@ namespace App\WebSocket\Components;
 use App\Components\BaseComponent;
 use App\WebSocket\Conf\WsServerConf;
 use Dleno\CommonCore\Tools\Server;
-
-use function Hyperf\Config\config;
+use Hyperf\Coroutine\Coroutine;
 
 /**
  * Class WsServerComponent
@@ -63,21 +62,21 @@ class WsServerComponent extends BaseComponent
      */
     public function clearRelServerData($offLines)
     {
-        go(
+        //后台异步清理(用 Coroutine::create 保留父协程 Context,避免裸 go() 丢上下文/吞异常)
+        Coroutine::create(
             function () use ($offLines) {
-                $clearKeys   = [
-                    WsPushMsgComponent::QUEUE_MESSAGE_PREFIX => ':',
-                ];
-                $redisPrefix = config('redis.default', [])['options'] ?? [];
-                $redisPrefix = $redisPrefix[\Redis::OPT_PREFIX] ?? '';
-                foreach ($clearKeys as $clearKey => $ln) {
-                    foreach ($offLines as $offLine) {
-                        $keys = $this->redis->keys($clearKey . $offLine . $ln . '*');
-                        foreach ($keys as $key) {
-                            $key = str_replace($redisPrefix, '', $key);
-                            $this->redis->del($key);
-                        }
-                    }
+                foreach ($offLines as $offLine) {
+                    //下线服务器的实时消息队列即 Hyperf AsyncQueue 通道,通道名与推送侧 getQueue() 一致;
+                    //RedisDriver 固定生成 5 个子键(waiting/reserved/delayed/failed/timeout),
+                    //直接 UNLINK 这几个已知键即可,无需 KEYS/SCAN 扫描整个 keyspace(避免阻塞 Redis)。
+                    $channel = WsPushMsgComponent::getQueue($offLine);
+                    $this->redis->unlink(
+                        $channel . ':waiting',
+                        $channel . ':reserved',
+                        $channel . ':delayed',
+                        $channel . ':failed',
+                        $channel . ':timeout'
+                    );
                 }
             }
         );
