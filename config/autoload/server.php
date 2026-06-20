@@ -63,6 +63,13 @@ return [
                         'open_websocket_ping_frame'  => true,//启用 WebSocket 协议中 Ping 帧（自行处理心跳回复及对应逻辑）
                         'open_websocket_pong_frame'  => true,
                         'websocket_compression'      => env('WEBSOCKET_COMPRESSION', false),//启用帧压缩
+                        //单帧最大字节数：默认 1MB（远小于 Swoole 默认 8MB），防超大/畸形帧 json_decode 拖垮 worker；按业务可调
+                        'package_max_length'         => (int)env('WS_PACKAGE_MAX_LENGTH', 1048576),
+                        //服务端心跳:每 check_interval 秒扫描一次,连接空闲(未收到任何数据)超过 idle_time 秒即关闭→触发 onClose 解绑。
+                        //必须 idle_time + check_interval <= 绑定TTL(WsKeys::BIND_CACHE_TIME=60s),确保"客户端停止心跳"的死连接
+                        //在其绑定过期沦为"活而无绑(收不到定向推送)"之前被关闭清理。客户端须按 < idle_time 的频率发心跳续期。
+                        'heartbeat_check_interval'   => (int)env('WS_HEARTBEAT_CHECK_INTERVAL', 15),
+                        'heartbeat_idle_time'        => (int)env('WS_HEARTBEAT_IDLE_TIME', 45),
                     ],
                 ];
             }
