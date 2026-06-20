@@ -6,7 +6,7 @@ namespace App\WebSocket\Controller\Test;
 
 use App\WebSocket\Controller\BaseController;
 use App\WebSocket\Service\Test\TestService;
-use Dleno\CommonCore\Annotation\WsController;
+use Dleno\CommonCore\Websocket\Annotation\WsController;
 
 #[WsController]
 class TestController extends BaseController

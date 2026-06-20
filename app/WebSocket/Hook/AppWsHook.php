@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\WebSocket\Hook;
 
-use Dleno\CommonCore\Base\Websocket\AbstractWsHook;
+use Dleno\CommonCore\Websocket\Hook\AbstractWsHook;
 
 /**
  * 业务 WS 生命周期钩子（空实现，按需 override）。
@@ -16,7 +16,7 @@ use Dleno\CommonCore\Base\Websocket\AbstractWsHook;
  *   - beforeSend($server, $fd, $payload): string  回包发送前：观察 / 改写出站（自担协议责任）
  *   - afterMessage($server, $frame, $result)  处理后：埋点 / 日志
  *
- * 多个独立关注点（日志 + presence + 风控…）可各自成类并用 Dleno\CommonCore\Base\Websocket\CompositeWsHook 组合后注入。
+ * 多个独立关注点（日志 + presence + 风控…）可各自成类并用 Dleno\CommonCore\Websocket\Hook\CompositeWsHook 组合后注入。
  */
 class AppWsHook extends AbstractWsHook
 {

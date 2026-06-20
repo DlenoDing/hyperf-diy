@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\WebSocket\AsyncQueue\Process;
 
-use Dleno\CommonCore\Tools\Websocket\Process\AbstractDcsMessageConsumer;
+use Dleno\CommonCore\Websocket\Process\AbstractDcsMessageConsumer;
 use Hyperf\Process\Annotation\Process;
 
 use function Hyperf\Config\config;

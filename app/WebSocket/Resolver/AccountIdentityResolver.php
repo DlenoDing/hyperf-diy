@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\WebSocket\Resolver;
 
 use App\WebSocket\Components\WsAccountComponent;
-use Dleno\CommonCore\Contract\Websocket\WsIdentityResolverInterface;
+use Dleno\CommonCore\Websocket\Contract\WsIdentityResolverInterface;
 
 /**
  * 业务身份解析实现：委托现有 WsAccountComponent::checkAccountByToken（token → 账户信息，含 account_id）。

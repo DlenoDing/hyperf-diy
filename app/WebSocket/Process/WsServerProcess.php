@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\WebSocket\Process;
 
-use Dleno\CommonCore\Tools\Websocket\Process\AbstractWsServerProcess;
+use Dleno\CommonCore\Websocket\Process\AbstractWsServerProcess;
 use Hyperf\Process\Annotation\Process;
 
 use function Hyperf\Config\config;

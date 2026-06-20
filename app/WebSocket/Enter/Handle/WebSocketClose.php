@@ -5,7 +5,7 @@ namespace App\WebSocket\Enter\Handle;
 
 use App\WebSocket\Components\WsServerComponent;
 use App\WebSocket\Components\WsTokenComponent;
-use Dleno\CommonCore\Contract\Websocket\WsHookInterface;
+use Dleno\CommonCore\Websocket\Contract\WsHookInterface;
 use Hyperf\Di\Annotation\Inject;
 
 /**

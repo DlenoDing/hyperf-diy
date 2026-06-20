@@ -8,7 +8,7 @@ use App\WebSocket\Conf\WsRequestConf;
 use Dleno\CommonCore\Conf\RcodeConf;
 use Dleno\CommonCore\Conf\RequestConf;
 use Dleno\CommonCore\Exception\Http\HttpException;
-use Dleno\CommonCore\Tools\Output\WsOutLog;
+use Dleno\CommonCore\Websocket\Support\WsOutLog;
 use Dleno\CommonCore\Tools\Server;
 use Hyperf\Context\Context;
 use Hyperf\WebSocketServer\Context as WsContext;
@@ -28,10 +28,10 @@ class WebSocketAuthMiddleware implements MiddlewareInterface
     protected $container;
 
     #[\Hyperf\Di\Annotation\Inject]
-    protected \Dleno\CommonCore\Contract\Websocket\WsHookInterface $wsHook;
+    protected \Dleno\CommonCore\Websocket\Contract\WsHookInterface $wsHook;
 
     #[\Hyperf\Di\Annotation\Inject]
-    protected \Dleno\CommonCore\Contract\Websocket\WsIdentityResolverInterface $identityResolver;
+    protected \Dleno\CommonCore\Websocket\Contract\WsIdentityResolverInterface $identityResolver;
 
     public function __construct(ContainerInterface $container)
     {

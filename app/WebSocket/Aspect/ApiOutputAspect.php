@@ -5,7 +5,7 @@ namespace App\WebSocket\Aspect;
 use Hyperf\Di\Annotation\Aspect;
 use Hyperf\Di\Aop\AbstractAspect;
 use Hyperf\Di\Aop\ProceedingJoinPoint;
-use Dleno\CommonCore\Tools\Output\WsOutLog;
+use Dleno\CommonCore\Websocket\Support\WsOutLog;
 
 #[Aspect]
 class ApiOutputAspect extends AbstractAspect
@@ -16,8 +16,8 @@ class ApiOutputAspect extends AbstractAspect
 
     // 要切入的注解，具体切入的还是使用了这些注解的类，仅可切入类注解和类方法注解
     public array $annotations = [
-        \Dleno\CommonCore\Annotation\WsController::class,
-        \Dleno\CommonCore\Annotation\WsExceptionHandlerLog::class,
+        \Dleno\CommonCore\Websocket\Annotation\WsController::class,
+        \Dleno\CommonCore\Websocket\Annotation\WsExceptionHandlerLog::class,
     ];
 
     public function process(ProceedingJoinPoint $proceedingJoinPoint)
