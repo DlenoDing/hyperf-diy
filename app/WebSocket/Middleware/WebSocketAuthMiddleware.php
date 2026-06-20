@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\WebSocket\Middleware;
 
-use App\WebSocket\Components\WsAccountComponent;
 use App\WebSocket\Conf\WsRequestConf;
 use Dleno\CommonCore\Conf\RcodeConf;
 use Dleno\CommonCore\Conf\RequestConf;
@@ -27,6 +26,12 @@ class WebSocketAuthMiddleware implements MiddlewareInterface
      * @var ContainerInterface
      */
     protected $container;
+
+    #[\Hyperf\Di\Annotation\Inject]
+    protected \Dleno\CommonCore\Contract\Websocket\WsHookInterface $wsHook;
+
+    #[\Hyperf\Di\Annotation\Inject]
+    protected \Dleno\CommonCore\Contract\Websocket\WsIdentityResolverInterface $identityResolver;
 
     public function __construct(ContainerInterface $container)
     {
@@ -62,6 +67,9 @@ class WebSocketAuthMiddleware implements MiddlewareInterface
         $debug = get_query_val(WsRequestConf::REQUEST_HEADER_DEBUG, false);
         $debug = ($debug && !Server::isProd()) ? true : false;
 
+        //前置钩子(默认 no-op;可做风控/灰度,抛异常=拒绝握手)
+        $this->wsHook->beforeHandshake($request);
+
         Server::getTraceId();
         $clientToken = get_query_val(WsRequestConf::REQUEST_HEADER_TOKEN, '');
         if (empty($clientToken)) {
@@ -71,10 +79,11 @@ class WebSocketAuthMiddleware implements MiddlewareInterface
         $request = $request->withHeader(WsRequestConf::REQUEST_HEADER_DEBUG, $debug ? 1 : 0)
                            ->withHeader(WsRequestConf::REQUEST_HEADER_TOKEN, $clientToken);
 
+        $account = [];
         try {
-            $wsAccountCpt = get_inject_obj(WsAccountComponent::class);
-            $account      = $wsAccountCpt->checkAccountByToken($clientToken);
-            $accountId    = $account['account_id'] ?? 0;
+            //身份解析走 common-core 契约(业务实现 AccountIdentityResolver)
+            $account   = $this->identityResolver->resolveByToken($clientToken);
+            $accountId = $account['account_id'] ?? 0;
             if (empty($accountId)) {
                 throw new HttpException('Error Token.', RcodeConf::ERROR_TOKEN);
             }
@@ -87,6 +96,9 @@ class WebSocketAuthMiddleware implements MiddlewareInterface
         Context::set(ServerRequestInterface::class, $request);
         //后续该fd全局使用
         WsContext::set(ServerRequestInterface::class, $request);
+
+        //后置钩子(默认 no-op;身份已解析+Context 已写)
+        $this->wsHook->afterHandshake($request, $account);
 
         return $request;
     }

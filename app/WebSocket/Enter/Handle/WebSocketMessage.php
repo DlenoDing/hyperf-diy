@@ -35,6 +35,9 @@ class WebSocketMessage
     #[Inject]
     protected ExceptionHandlerDispatcher $exceptionHandlerDispatcher;
 
+    #[Inject]
+    protected \Dleno\CommonCore\Contract\Websocket\WsHookInterface $wsHook;
+
     /**
      * @var array
      */
@@ -67,6 +70,9 @@ class WebSocketMessage
 
         $data = null;
         try {
+            //前置钩子(默认 no-op;进业务前可做逐消息风控/频控/审计,抛异常→走下方异常回包)
+            $this->wsHook->beforeMessage($server, $frame, $frame->data);
+
             //TODO 核心处理
             $this->coreHandle($request, $frame->data);
 
@@ -95,6 +101,8 @@ class WebSocketMessage
                     'data'  => $data,
                 ]
             );
+            //发送前钩子(默认 no-op;业务可观察/改写出站,自担协议责任)
+            $return = $this->wsHook->beforeSend($server, (int)$frame->fd, $return);
             if (!env('WEBSOCKET_COMPRESSION', false)) {//这个配置无法通过配置中心来设置
                 $server->push($frame->fd, $return);
             } else {
@@ -106,6 +114,9 @@ class WebSocketMessage
                 );
             }
         }
+
+        //后置钩子(默认 no-op;处理后埋点/日志)
+        $this->wsHook->afterMessage($server, $frame, $data);
 
         NOTRETURN:
         //不发送任何数据
