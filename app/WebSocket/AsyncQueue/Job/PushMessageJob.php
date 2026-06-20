@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\WebSocket\AsyncQueue\Job;
 
 use App\WebSocket\Components\WsPushMsgComponent;
-use App\WebSocket\Components\WsServerComponent;
 use Dleno\CommonCore\Base\AsyncQueue\BaseJob;
 use Dleno\CommonCore\Tools\Logger;
+use Dleno\CommonCore\Tools\Websocket\WsBroadcast;
 
 class PushMessageJob extends BaseJob
 {
@@ -39,28 +39,11 @@ class PushMessageJob extends BaseJob
         $nfd = $this->data['nfd'] ?? 0;
         unset($this->data['fd'], $this->data['nfd']);
         $pmCpt   = get_inject_obj(WsPushMsgComponent::class);
-        $wssCpt  = get_inject_obj(WsServerComponent::class);
         $message = $this->parseCmdMessage();
         if (empty($fd)) {
-            //发送给当前服务器的所有人
-            $cursor = null;
-            while (true) {
-                $clients = $wssCpt->getClients($cursor, 100);
-                if (empty($clients)) {
-                    break;
-                }
-                foreach ($clients as $client) {
-                    if ($nfd == $client) {
-                        continue;
-                    }
-                    try {
-                        $pmCpt->send($client, $message);
-                    } catch (\Throwable $e) {
-                        Logger::businessLog('PUSH-FD')
-                              ->info(array_to_json(['msg' => $e->getMessage()]));
-                    }
-                }
-            }
+            //发送给当前服务器的所有人:每事件 worker 一条信号、各自推本地连接
+            //(O(W) IPC,替代原 HSCAN 全量 + 逐 fd 经 Sender 扇出的 O(N×W))
+            WsBroadcast::toAll($message, (int)$nfd);
         } else {
             //发送给当前服务器指定的人
             try {
