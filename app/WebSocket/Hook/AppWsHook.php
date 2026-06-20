@@ -4,21 +4,62 @@ declare(strict_types=1);
 
 namespace App\WebSocket\Hook;
 
+use App\WebSocket\Components\WsAccountComponent;
+use App\WebSocket\Conf\WsRequestConf;
+use Dleno\CommonCore\Conf\RcodeConf;
+use Dleno\CommonCore\Exception\Http\HttpException;
+use Dleno\CommonCore\Tools\Server;
 use Dleno\CommonCore\Websocket\Hook\AbstractWsHook;
+use Dleno\CommonCore\Websocket\Support\WsIdentity;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * 业务 WS 生命周期钩子（空实现，按需 override）。
+ * 业务 WS 生命周期钩子（继承 AbstractWsHook，按需 override）。
  *
- * 默认全部继承 AbstractWsHook 的 no-op。业务有特殊需求时，覆盖对应方法即可，例如：
- *   - afterOpen($server, $request)      连接建立+绑定后：发欢迎语 / 上线广播 / presence
- *   - beforeClose($server, $fd)         解绑前（身份仍在）：下线广播 / 业务清理
- *   - beforeMessage($server, $frame, $parsed)  进业务前：逐消息风控 / 频控 / 审计
- *   - beforeSend($server, $fd, $payload): string  回包发送前：观察 / 改写出站（自担协议责任）
- *   - afterMessage($server, $frame, $result)  处理后：埋点 / 日志
+ * 握手三段钩子（由 common-core WebSocketAuthMiddleware 依次调用 before→on→after）中，
+ * **中置 onHandshake 是业务身份解析的落点** —— 取代了原来的 WsIdentityResolver：
+ * 在这里读 token、解析身份、写 header、WsIdentity::set 完整身份，无效则抛异常拒绝握手。
  *
- * 多个独立关注点（日志 + presence + 风控…）可各自成类并用 Dleno\CommonCore\Websocket\Hook\CompositeWsHook 组合后注入。
+ * 其它可按需 override：afterOpen（上线广播/presence）、beforeClose（下线广播）、
+ * beforeMessage（逐消息风控）、beforeSend（出站改写）、afterMessage（埋点）等；不 override 即走父类 no-op。
+ * 多关注点可各自成类并用 Dleno\CommonCore\Websocket\Hook\CompositeWsHook 组合注入。
  */
 class AppWsHook extends AbstractWsHook
 {
-    // 当前无业务副作用：全部走父类 no-op。需要时在此覆盖对应方法。
+    /**
+     * 中置握手钩子：业务身份解析（原 AccountIdentityResolver 逻辑搬到这）。
+     * 读 token → 解析账户（WsAccountComponent::checkAccountByToken）→ 写 header → WsIdentity::set 完整身份；
+     * 无 token / 无 account_id 则抛异常拒绝握手。返回(改过的)request。
+     */
+    public function onHandshake(ServerRequestInterface $request): ServerRequestInterface
+    {
+        $debug = get_query_val(WsRequestConf::REQUEST_HEADER_DEBUG, false);
+        $debug = ($debug && !Server::isProd()) ? true : false;
+
+        $clientToken = get_query_val(WsRequestConf::REQUEST_HEADER_TOKEN, '');
+        if (empty($clientToken)) {
+            throw new HttpException('Empty Token', RcodeConf::ERROR_TOKEN);
+        }
+        $request = $request->withHeader(WsRequestConf::REQUEST_HEADER_DEBUG, $debug ? 1 : 0)
+                           ->withHeader(WsRequestConf::REQUEST_HEADER_TOKEN, $clientToken);
+
+        $account = [];
+        try {
+            //业务身份解析：无效 token 由 checkAccountByToken 抛异常 / 返回空
+            $account   = get_inject_obj(WsAccountComponent::class)->checkAccountByToken($clientToken);
+            $account   = is_array($account) ? $account : [];
+            $accountId = $account['account_id'] ?? 0;
+            if (empty($accountId)) {
+                throw new HttpException('Error Token.', RcodeConf::ERROR_TOKEN);
+            }
+            $request = $request->withHeader(WsRequestConf::REQUEST_HEADER_ACCOUNT_ID, $accountId);
+        } catch (\Throwable $e) {
+            throw new HttpException('Error Token', RcodeConf::ERROR_TOKEN);
+        }
+
+        //存完整身份(resolveByToken 返回 + token),供 setBind→WsBindStrategy::bindDimensions 取任意维度
+        WsIdentity::set(array_merge($account, ['token' => $clientToken]));
+
+        return $request;
+    }
 }

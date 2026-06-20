@@ -19,7 +19,7 @@ if (env('ENABLE_HTTP', false)) {
 }
 if (env('ENABLE_WS', false)) {
     $exceptions['ws'] = [
-        \App\WebSocket\Middleware\WebSocketAuthMiddleware::class,//ws握手
+        \Dleno\CommonCore\Websocket\Server\WebSocketAuthMiddleware::class,//ws握手
     ];
 }
 return $exceptions;
