@@ -22,7 +22,7 @@ return [
                     \Dleno\CommonCore\Exception\Handler\CommonExceptionHandler::class,//公共异常控制器，不中断
                     \Dleno\CommonCore\Exception\Handler\Http\HttpExceptionHandler::class,//http异常控制器
                     \Dleno\CommonCore\Exception\Handler\Http\ValidationExceptionHandler::class,//验证器异常控制器
-                    \Dleno\CommonCore\Exception\Handler\Rpc\RpcClientRequestExceptionHandler::class,//rpc-client请求异常
+                    \Dleno\CommonCore\Exception\Handler\Http\RpcClientRequestExceptionHandler::class,//rpc-client请求异常(http链须用Http版:会写JSON错误体;Rpc版只原样返回→HTTP下客户端收空body)
                     \Dleno\CommonCore\Exception\Handler\Http\AppExceptionHandler::class,//APP异常控制器
                     \Dleno\CommonCore\Exception\Handler\Http\ServerExceptionHandler::class,//系统异常控制器
                     \Dleno\CommonCore\Exception\Handler\Http\DefaultExceptionHandler::class,//默认异常控制器
