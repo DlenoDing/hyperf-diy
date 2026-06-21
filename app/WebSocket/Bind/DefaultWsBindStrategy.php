@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\WebSocket\Bind;
 
-use Dleno\CommonCore\Websocket\Contract\WsBindStrategyInterface;
+use Dleno\CommonCore\Websocket\Strategy\AbstractWsBindStrategy;
 
 /**
  * WS 连接绑定策略 —— 脚手架自带的默认实现。
  *
  * 「绑哪些维度、哪些维度可被定向寻址」属于业务决策（各项目不同），故默认实现放在业务端、由 dependencies.php 绑定；
- * common-core 只持有契约 {@see WsBindStrategyInterface}，不提供包内默认实现。
+ * common-core 只持有契约（{@see \Dleno\CommonCore\Websocket\Contract\WsBindStrategyInterface}）
+ * 与抽象基类（{@see AbstractWsBindStrategy}，提供 uniqueDimensions 等可选方法的默认实现）。
  *
  * 本默认实现：**只绑 account_id 一个维度**，并以 account_id 作为唯一可寻址维度
  * —— 即"按用户 account_id 反查其全部在线连接"，覆盖最常见的单端/多连接同账号场景。
@@ -26,7 +27,7 @@ use Dleno\CommonCore\Websocket\Contract\WsBindStrategyInterface;
  *  - 下发(pushToDimMessage)/在线检查时：按 (维度名, 维度值) 取对应反向索引，拿到该维度下的全部连接寻址。
  *  - 断开(unBind)/心跳(refreshBind)时：依据正向主绑定里的维度，反删 / 续期各反向索引。
  */
-class DefaultWsBindStrategy implements WsBindStrategyInterface
+class DefaultWsBindStrategy extends AbstractWsBindStrategy
 {
     /**
      * 给定连接与已解析身份，返回本连接要"绑定 + 建反向索引"的维度集合。
@@ -67,17 +68,8 @@ class DefaultWsBindStrategy implements WsBindStrategyInterface
         return ['account_id'];
     }
 
-    /**
-     * 【可选】声明"同一维度值下只允许一个连接"的维度（后登录踢前登录 / 单点登录）。
-     * 返回空数组 = 维持默认：同维度值可挂多个连接（多端/多 tab）。须是 addressableDimensions() 子集。
-     *
-     * 示例：
-     *  - 同一账号全局单连接：return ['account_id'];
-     *  - 同一账号每端各一连接（组合字段）：bindDimensions 里加 'login'=>$accountId.':'.$device，
-     *    addressableDimensions 加 'login'，此处 return ['login'];
-     */
-    public function uniqueDimensions(): array
-    {
-        return [];
-    }
+    //单连接维度 uniqueDimensions() 默认继承自 AbstractWsBindStrategy（返回 []=同维度值可多连接）。
+    //需要单点登录/踢旧时在此 override，例如：
+    //  - 同一账号全局单连接：           public function uniqueDimensions(): array { return ['account_id']; }
+    //  - 同一账号每端各一连接(组合字段)： bindDimensions 加 'login'=>$accountId.':'.$device、addressableDimensions 加 'login'，再 return ['login'];
 }
