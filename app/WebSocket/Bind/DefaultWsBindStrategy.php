@@ -66,4 +66,18 @@ class DefaultWsBindStrategy implements WsBindStrategyInterface
     {
         return ['account_id'];
     }
+
+    /**
+     * 【可选】声明"同一维度值下只允许一个连接"的维度（后登录踢前登录 / 单点登录）。
+     * 返回空数组 = 维持默认：同维度值可挂多个连接（多端/多 tab）。须是 addressableDimensions() 子集。
+     *
+     * 示例：
+     *  - 同一账号全局单连接：return ['account_id'];
+     *  - 同一账号每端各一连接（组合字段）：bindDimensions 里加 'login'=>$accountId.':'.$device，
+     *    addressableDimensions 加 'login'，此处 return ['login'];
+     */
+    public function uniqueDimensions(): array
+    {
+        return [];
+    }
 }
