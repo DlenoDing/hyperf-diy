@@ -2,12 +2,14 @@
 
 namespace App\Aspect;
 
-use App\Conf\SignConf;
 use Dleno\CommonCore\Aspect\AbstractModuleBeforeAspect;
 
+use function Hyperf\Config\config;
+
 /**
- * 项目侧模块前置切面中间类：将 common-core 通用切面所需的签名参数钩子接到本项目 SignConf。
- *（路由白名单值 / AES 密钥已统一由 common-core ApiServer 提供，无需此处再接）
+ * 项目侧模块前置切面中间类：将 common-core 通用切面所需的签名参数钩子接到本项目配置。
+ *（签名密钥/前缀/时间偏移统一走 config('app.sign_*')，由 env 注入；
+ *  路由白名单值 / AES 密钥已统一由 common-core ApiServer 提供，无需此处再接）
  *
  * 仍为抽象类，isMatch()/checkAuth() 留给 Admin / Api 具体子类实现。
  */
@@ -18,7 +20,7 @@ abstract class AppModuleBeforeAspect extends AbstractModuleBeforeAspect
      */
     protected function signPrefix(): string
     {
-        return SignConf::PREFIX;
+        return (string) config('app.sign_prefix', 'WS_');
     }
 
     /**
@@ -26,7 +28,7 @@ abstract class AppModuleBeforeAspect extends AbstractModuleBeforeAspect
      */
     protected function signKey(): string
     {
-        return SignConf::SIGN_KEY;
+        return (string) config('app.sign_key', '');
     }
 
     /**
@@ -34,6 +36,6 @@ abstract class AppModuleBeforeAspect extends AbstractModuleBeforeAspect
      */
     protected function signExpire(): int
     {
-        return SignConf::EXPIRE_TIME;
+        return (int) config('app.sign_expire', 300);
     }
 }
