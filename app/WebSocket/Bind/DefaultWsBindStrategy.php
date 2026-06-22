@@ -68,6 +68,18 @@ class DefaultWsBindStrategy extends AbstractWsBindStrategy
         return ['account_id'];
     }
 
+    /**
+     * 声明哪些维度可被「心跳级在线检查」(checkHeartbeatOnlineByDim) 按值查询;框架为这些维度维护 presence 索引。
+     * 默认放 account_id —— 它单 value 连接数可控(多端也就几条),适合在线检查。
+     * 框架会自动并入 uniqueDimensions(),故 unique 维度即使不列也可查。
+     * **切勿放低基数分组维度**(device_type/channel/language 等一个值挂海量连接的)——那是 addressableDimensions 寻址推送该干的。
+     * @return string[]
+     */
+    public function onlineCheckDimensions(): array
+    {
+        return ['account_id'];
+    }
+
     //单连接维度 uniqueDimensions() 默认继承自 AbstractWsBindStrategy（返回 []=同维度值可多连接）。
     //需要单点登录/踢旧时在此 override，例如：
     //  - 同一账号全局单连接：           public function uniqueDimensions(): array { return ['account_id']; }
