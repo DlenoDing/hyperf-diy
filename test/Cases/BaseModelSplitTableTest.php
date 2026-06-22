@@ -87,13 +87,13 @@ class BaseModelSplitTableTest extends TestCase
 
     /**
      * 场景1：数量分表，建表即带正确 AUTO_INCREMENT。
-     * shard 00002 应从 splitMaxNum*2+1 = 2001 开始，首条插入 id 必须正好是 2001，
-     * 证明表"出生"就带正确自增基值，不存在 CREATE→ALTER 空窗。
+     * 表序号 1 基：shard 00002 承载 id [splitMaxNum*1+1, splitMaxNum*2]，自增基值 = splitMaxNum*(2-1)+1 = 1001，
+     * 首条插入 id 必须正好是 1001，证明表"出生"就带正确自增基值（与 ceil(id/splitMaxNum) 反查一致），不存在 CREATE→ALTER 空窗。
      */
     public function testNumShardAtomicAutoIncrement(): void
     {
         $id = ShardNumModel::withTable('00002')->insertGetId(['name' => 'a']);
-        $this->assertSame(2001, (int) $id, 'shard 00002 首条 id 应为 2001（原子自增基值）');
+        $this->assertSame(1001, (int) $id, 'shard 00002 首条 id 应为 1001（1 基自增基值）');
         $this->assertTrue($this->tableExists('shard_test@00002'));
     }
 
@@ -148,10 +148,10 @@ class BaseModelSplitTableTest extends TestCase
         $this->assertSame([], $errors, '并发建表不应抛出异常');
         $this->assertTrue($this->tableExists('shard_test@00005'), '并发后分表应已创建');
 
-        //自增基值仍为 splitMaxNum*5+1 = 5001
+        //自增基值仍为 splitMaxNum*(5-1)+1 = 4001（1 基）
         $this->resetStaticCache();
         $id = ShardNumModel::withTable('00005')->insertGetId(['name' => 'a']);
-        $this->assertSame(5001, (int) $id, '并发建表后自增基值应正确（5001）');
+        $this->assertSame(4001, (int) $id, '并发建表后自增基值应正确（4001）');
     }
 
     /**
