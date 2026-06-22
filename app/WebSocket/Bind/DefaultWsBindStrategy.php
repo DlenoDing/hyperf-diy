@@ -24,8 +24,9 @@ use Dleno\CommonCore\Websocket\Strategy\AbstractWsBindStrategy;
  *  - 连接建立(setBind)时：用 bindDimensions() 拿到本连接要记录的维度集合，写入"正向主绑定"
  *    （<prefix>bind:sfd:<sv>:<fd> => 维度 json），并对 addressableDimensions() 里的每个维度
  *    各建一份"反向索引"（<prefix>bind:<dim>:<value> 的 hash，field=<sv:fd> 唯一标识本连接 => serverFd）。
- *  - 下发(pushToDimMessage)/在线检查时：按 (维度名, 维度值) 取对应反向索引，拿到该维度下的全部连接寻址。
- *  - 断开(unBind)/心跳(refreshBind)时：依据正向主绑定里的维度，反删 / 续期各反向索引。
+ *  - 下发(pushToDimMessage)/实时在线检查(checkRealtimeOnlineByDim)时：按 (维度名, 维度值) 取对应反向索引寻址；
+ *    心跳在线检查(checkHeartbeatOnlineByDim)读 presence 索引(由 onlineCheckDimensions() 声明的维度才有)。
+ *  - 断开(unBind)/心跳(refreshBind)时：依据正向主绑定里的维度，反删 / 续期各反向索引(及 presence)。
  */
 class DefaultWsBindStrategy extends AbstractWsBindStrategy
 {
