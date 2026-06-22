@@ -115,6 +115,32 @@ Dleno\CommonCore\Websocket\Contract\WsHookInterface::class
 - WebSocket 绑定策略和 Hook 属于业务决策，common-core 不提供强制默认实现。
 - HTTP / WS 基础中间件由 common-core `ConfigProvider` 根据 `ENABLE_HTTP` / `ENABLE_WS` 自动注入，业务不要重复追加同名中间件；如要接管，先关闭对应 env 开关。
 - HTTP / WS 输出日志切面由 common-core 自动注册，业务项目不需要声明自己的 `ApiOutputAspect`。
+- 默认 HTTP / WS 异常链由 common-core `ExceptionHandlerConfig` 生成；`config/autoload/exceptions.php` 保留为业务 handler 的顺序控制入口。
+
+异常处理器追加示例：
+
+```php
+use Dleno\CommonCore\Exception\ExceptionHandlerConfig;
+
+return [
+    'handler' => ExceptionHandlerConfig::defaultHandlers(
+        httpCommonHandlers: [
+            App\Exception\Handler\BusinessCommonExceptionHandler::class,
+        ],
+        wsCommonHandlers: [
+            App\WebSocket\Exception\Handler\BusinessCommonWsExceptionHandler::class,
+        ],
+        httpBeforeDefault: [
+            App\Exception\Handler\BusinessOutputExceptionHandler::class,
+        ],
+        wsBeforeDefault: [
+            App\WebSocket\Exception\Handler\BusinessWsOutputExceptionHandler::class,
+        ],
+    ),
+];
+```
+
+公共前置 handler 放到 `httpCommonHandlers` / `wsCommonHandlers`，会插入到 common-core 的 `CommonExceptionHandler` 之后，适合回滚、审计、上下文清理等不中断传播的处理；业务输出类 handler 放到 `httpBeforeDefault` / `wsBeforeDefault`，会插入到 common-core 的兜底 `DefaultExceptionHandler` 之前。不要把业务 handler 追加在默认链之后，否则异常可能已经被兜底 handler 截断。
 
 ## HTTP 示例
 
