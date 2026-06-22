@@ -51,4 +51,19 @@ return [
         //加密
         "Client-Key",              //接口加密秘钥
     ],
+
+    //访问日志(ApiOutLog/WsOutLog)要从入/出参里过滤掉的请求头(避免敏感信息落日志)。
+    //定义此项即整体覆盖包内兜底默认,故需含原最小集 + 业务敏感头;排查时可临时移除某项单独放行。
+    'filter_headers'        => [
+        "content-type",
+        "client-key",               //接口加密秘钥
+        "client-sign",              //接口鉴权签名
+        "client-nonce",             //随机数
+        "client-timestamp",         //时间戳
+        "client-accesskey",         //访问密钥
+        "client-token",             //用户登录令牌(登录态,务必过滤)
+        "authorization",            //通用鉴权头
+        "cookie",                   //会话 cookie
+        "set-cookie",               //下发 cookie
+    ],
 ];
