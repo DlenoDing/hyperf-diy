@@ -70,10 +70,16 @@ class DefaultWsBindStrategy extends AbstractWsBindStrategy
     }
 
     /**
-     * 声明哪些维度可被「心跳级在线检查」(checkHeartbeatOnlineByDim) 按值查询;框架为这些维度维护 presence 索引。
+     * 声明哪些维度可被「心跳级在线检查」(checkHeartbeatOnlineByDim / checkHeartbeatOnlineAllByDim) 按值查询;框架为这些维度维护 presence 索引。
      * 默认放 account_id —— 它单 value 连接数可控(多端也就几条),适合在线检查。
      * 框架会自动并入 uniqueDimensions(),故 unique 维度即使不列也可查。
-     * **切勿放低基数分组维度**(device_type/channel/language 等一个值挂海量连接的)——那是 addressableDimensions 寻址推送该干的。
+     *
+     * **切勿放低基数分组维度**(device_type/channel/language 等一个值挂海量连接的)——那是 addressableDimensions 寻址推送该干的,
+     * 拿来做在线检查会拖垮 Redis。
+     *
+     * ⚠️ **配错陷阱**:所列维度**必须是 bindDimensions() 会返回的维度名**。若把某 dim 放进这里、但 bindDimensions() 不返回它,
+     * 则 setBind/refreshBind/unBind 都会静默跳过该 dim、presence 永远建不起来,而 checkHeartbeatOnlineByDim('该dim',…) 又因维度
+     * 合法照常执行 → **静默返回全 false(表现成"用户都不在线")**。框架无法静态校验(bindDimensions 按身份动态返回),务必自行保证一致。
      * @return string[]
      */
     public function onlineCheckDimensions(): array
