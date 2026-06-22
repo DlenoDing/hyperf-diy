@@ -56,7 +56,7 @@ class DefaultWsBindStrategy extends AbstractWsBindStrategy
     }
 
     /**
-     * 声明哪些维度需要建"反向索引"，即哪些维度可被"定向推送 / 在线检查"按值寻址。
+     * 声明哪些维度需要建"反向索引"，即哪些维度可被"定向推送 / 实时在线核验"按值寻址。
      *
      * 必须是 bindDimensions() 返回维度名的子集；不在此列表里的维度只存进正向主绑定、不可被寻址。
      *
