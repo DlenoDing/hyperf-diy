@@ -10,12 +10,19 @@ use Dleno\CommonCore\Exception\AppException;
 use Hyperf\Context\Context;
 
 
+/**
+ * WS 账号组件示例。
+ *
+ * 负责把业务账号体系接入 WS 握手、上下文读取和账号缓存。脚手架默认不实现真实鉴权，
+ * 实际项目必须替换 checkAccountByToken() 中的账号查询逻辑。
+ */
 class WsAccountComponent extends BaseComponent
 {
     /**
-     * 保存账户缓存数据
-     * @param $accountId
-     * @param $account
+     * 保存账户缓存数据。
+     *
+     * @param int|string $accountId 账号 ID
+     * @param array $account 账号信息
      */
     public function setAccountCache($accountId, $account)
     {
@@ -24,8 +31,10 @@ class WsAccountComponent extends BaseComponent
     }
 
     /**
-     * 获取账户缓存数据
-     * @param $accountId
+     * 获取账户缓存数据。
+     *
+     * @param int|string $accountId 账号 ID
+     * @return array|null
      */
     public function getAccountCache($accountId)
     {
@@ -35,17 +44,22 @@ class WsAccountComponent extends BaseComponent
     }
 
     /**
-     * 删除账户缓存数据
-     * @param $accountId
+     * 删除账户缓存数据。
+     *
+     * @param int|string $accountId 账号 ID
      */
     public function delAccountCache($accountId)
     {
-        //todo nothing
+        //示例项目未接入真实账号缓存；业务实现时在此删除对应缓存。
     }
 
     /**
-     * 检查$clientToken是否有效
-     * @param $clientToken
+     * 检查客户端 token 是否有效，并返回账号身份。
+     *
+     * 返回数组至少应包含 account_id，供 DefaultWsBindStrategy::bindDimensions() 绑定维度。
+     *
+     * @param string $clientToken 客户端登录 token
+     * @return array
      */
     public function checkAccountByToken($clientToken)
     {
@@ -60,7 +74,7 @@ class WsAccountComponent extends BaseComponent
         if (empty($accountInfo)) {
             throw new AppException('Error Account');
         }
-        //todo 账户数据与WS系统 为同一套系统，则无需设置缓存
+        //账户数据与 WS 系统为同一套系统时，可不额外设置 WS 侧缓存。
         //$this->setAccountCache($accountId, $accountInfo);
 
         return $accountInfo;*/
@@ -68,8 +82,11 @@ class WsAccountComponent extends BaseComponent
     }
 
     /**
-     * 获取当前账户信息
-     * @return array
+     * 获取当前连接账号 ID。
+     *
+     * 优先读 Context，缺失时从握手阶段写入的请求头回填。
+     *
+     * @return int|string
      */
     public function getCurrAccountId()
     {
@@ -82,8 +99,11 @@ class WsAccountComponent extends BaseComponent
     }
 
     /**
-     * 获取当前账户信息
-     * @return array
+     * 获取当前连接账号信息。
+     *
+     * 真实项目可在 Context 缺失时从账号缓存回填，示例中保留接入点但默认不查询。
+     *
+     * @return array|null
      */
     public function getCurrAccountInfo()
     {

@@ -39,6 +39,9 @@ class DcsLockConcurrencyTest extends TestCase
     private int $error = 0;
     private ?string $firstError = null;
 
+    /**
+     * 验证大量协程竞争同一把 DcsLock 时，临界区始终只有一个协程进入。
+     */
     public function testHighConcurrencyMutualExclusion(): void
     {
         $redis = ApplicationContext::getContainer()

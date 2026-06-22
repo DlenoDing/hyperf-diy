@@ -19,7 +19,7 @@ use function Hyperf\Support\env;
 use function Hyperf\Support\value;
 
 return [
-    //todo 启用ws服务时必须使用SWOOLE_BASE模式（否则客户端FD数据会有问题），其他类型服务可根据实际需求选择，如SWOOLE_PROCESS
+    //启用 WS 服务时必须使用 SWOOLE_BASE 模式（否则客户端 FD 数据会有问题）；纯 HTTP 服务可按实际需求选择其他模式。
     'mode'      => SWOOLE_BASE,
     'servers'   => value(
         function () {
@@ -80,7 +80,7 @@ return [
     ),
     'settings'  => value(
         function () {
-            //全局 Swoole 设置:全部 env 化、默认值=原写死值 → 不配置则行为与原来完全一致。
+            //全局 Swoole 设置：全部 env 化，未配置时使用推荐默认值。
             $settings = [
                 Constant::OPTION_ENABLE_COROUTINE    => true,
                 Constant::OPTION_WORKER_NUM          => (int)env("WORK_NUM", swoole_cpu_num()),
@@ -89,7 +89,7 @@ return [
                 Constant::OPTION_MAX_COROUTINE       => (int)env("MAX_COROUTINE", 100000),
                 Constant::OPTION_OPEN_HTTP2_PROTOCOL => true,
                 //全局 max_request:与各 server 段 max_request 用同一 env(MAX_REQUEST,默认0=不按请求数重启);
-                //注:per-server 段的 max_request 会覆盖本全局值(http/ws 已各自设置),此处仅为一致、消除"100000 vs 0"歧义。
+                //注:per-server 段的 max_request 会覆盖本全局值(http/ws 已各自设置),此处保持全局默认与各 server 配置一致。
                 Constant::OPTION_MAX_REQUEST         => (int)env("MAX_REQUEST", 0),
                 Constant::OPTION_SOCKET_BUFFER_SIZE  => (int)env("SOCKET_BUFFER_SIZE", 2 * 1024 * 1024),
                 Constant::OPTION_BUFFER_OUTPUT_SIZE  => (int)env("BUFFER_OUTPUT_SIZE", 2 * 1024 * 1024),

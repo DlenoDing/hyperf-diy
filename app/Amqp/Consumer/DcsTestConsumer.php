@@ -10,9 +10,17 @@ use Dleno\CommonCore\Tools\Server;
 use function Hyperf\Config\config;
 use function Hyperf\Support\env;
 
+/**
+ * AMQP 动态队列消费者示例。
+ *
+ * 根据当前服务器 IP 生成 routingKey/queue，适合节点级定向消费场景。
+ */
 #[Consumer(exchange: "DcsTestExchange", name: "DcsTestConsumer", nums: 1)]
 class DcsTestConsumer extends BaseConsumer
 {
+    /**
+     * 消费者使用独立连接池，避免长驻消费占用普通生产者连接池。
+     */
     protected string $poolName = 'consumer';
 
     /**
@@ -38,9 +46,9 @@ class DcsTestConsumer extends BaseConsumer
     protected $queueExpires = 60;
 
     /**
-     * 消费业务逻辑
-     * @param $data
-     * @return string
+     * 消费业务逻辑。
+     *
+     * @param mixed $data 消息体
      */
     public function consume($data): Result
     {
@@ -53,6 +61,9 @@ class DcsTestConsumer extends BaseConsumer
         return Result::ACK;
     }
 
+    /**
+     * 当前服务器专属 routingKey。
+     */
     public function getRoutingKey(): string
     {
         $serverId = Server::getIpAddr();
@@ -60,6 +71,9 @@ class DcsTestConsumer extends BaseConsumer
         return 'DcsTest_' . $serverId;
     }
 
+    /**
+     * 当前服务器专属 queue。
+     */
     public function getQueue(): string
     {
         $serverId = Server::getIpAddr();
@@ -67,6 +81,9 @@ class DcsTestConsumer extends BaseConsumer
         return 'DcsTest_' . $serverId;
     }
 
+    /**
+     * 控制示例消费者是否启用。
+     */
     public function isEnable(): bool
     {
         if (!env('AMQP_ENABLE', false)) {

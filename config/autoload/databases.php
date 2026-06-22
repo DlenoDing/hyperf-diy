@@ -13,6 +13,7 @@ use function Hyperf\Support\env;
 use function Hyperf\Support\value;
 
 return [
+    //默认数据库连接配置；连接池、读写分离、options 等公共参数由 common-core DbConfig 统一生成。
     'default' => value(
         function ($poolName = 'default') {
             $commands = Dleno\CommonCore\Db\DataBaseDbConfig::getCommands($poolName);

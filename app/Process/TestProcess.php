@@ -12,14 +12,29 @@ use Hyperf\Redis\Redis;
 
 use function Hyperf\Config\config;
 
+/**
+ * 自定义 Process 示例。
+ *
+ * 展示 Hyperf Process 中启动协程、循环执行和响应进程退出信号的基础写法。
+ * 当前脚手架默认关闭，避免启动后输出测试日志。
+ */
 #[Process(name: "TestProcess", enableCoroutine: true)]
 class TestProcess extends AbstractProcess
 {
+    /**
+     * 进程名称，便于日志和进程列表识别。
+     */
     public string $name = 'TestProcess';
 
+    /**
+     * 示例 Redis 依赖，业务 Process 可直接注入需要的组件。
+     */
     #[Inject]
     protected Redis $redis;
 
+    /**
+     * Process 主逻辑入口。
+     */
     public function handle(): void
     {
         go(function () {
@@ -44,6 +59,11 @@ class TestProcess extends AbstractProcess
         //$this->process->exit(0);
     }
 
+    /**
+     * 控制示例 Process 是否启用。
+     *
+     * 当前脚手架默认强制关闭，业务确认逻辑后再删除 return false 或改成 env 开关。
+     */
     public function isEnable($server): bool
     {
         return false;

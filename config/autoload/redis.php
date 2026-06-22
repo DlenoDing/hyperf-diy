@@ -13,6 +13,7 @@ use function Hyperf\Support\env;
 use function Hyperf\Support\value;
 
 return [
+    //默认 Redis 连接配置；连接池和底层 options 由 common-core RedisDbConfig 统一生成。
     'default' => value(
         function ($poolName = 'default') {
             $options = Dleno\CommonCore\Db\RedisDbConfig::getOptions($poolName);

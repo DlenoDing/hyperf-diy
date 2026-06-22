@@ -3,10 +3,12 @@
 use function Hyperf\Support\env;
 
 return [
-    //异常追踪机器人配置(为空或对应配置不存在)
+    //异常追踪默认使用的机器人配置 key；为空或对应配置不存在时不发送追踪通知。
     'trace'   => 'trace',
+    //钉钉通知频率限制使用的 Redis pool。
     'redis'   => 'default',
     'configs' => [
+        //普通系统通知机器人配置。
         'default' => [
             'enable'    => env('DINGTALK_ROBOT_ENABLE', false),
             'name'      => env('DINGTALK_ROBOT_NAME', '系统通知'),
@@ -23,6 +25,7 @@ return [
                 ],
             ],
         ],
+        //异常追踪机器人配置。
         'trace'   => [
             'enable'    => env('DINGTALK_TRACE_ENABLE', false),
             'name'      => env('DINGTALK_TRACE_NAME', '异常追踪'),

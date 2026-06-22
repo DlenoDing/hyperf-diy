@@ -31,7 +31,7 @@ class AdminModuleBeforeAspect extends AppModuleBeforeAspect
         if (CheckVal::checkInStatus(GlobalConf::WHITE_TYPE_TOKEN, $whiteVal)) {
             return;
         }
-        //TODO 后台登录校验（示例）
+        //后台登录校验接入点（示例）
         /*$token = get_header_val('Client-Token', 0);
         $checkAuth = get_inject_obj(BlindBoxComponent::class)->checkAuth($token);
         if (!$checkAuth) {

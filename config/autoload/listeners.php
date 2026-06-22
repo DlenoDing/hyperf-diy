@@ -1,21 +1,8 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of Hyperf.
- *
- * @link     https://www.hyperf.io
- * @document https://hyperf.wiki
- * @contact  group@hyperf.io
- * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
- */
-$listeners = [
-    //错误处理
-    \Hyperf\ExceptionHandler\Listener\ErrorExceptionHandler::class,
-    \Hyperf\Command\Listener\FailToHandleListener::class,
-    //异步队列自动重载超时消息
-    \Hyperf\AsyncQueue\Listener\ReloadChannelListener::class,
-    //Websocket 连接检查监听 OnPipeMessageListener 已由 common-core 的 #[Listener] 注解自动注册,无需在此手动配置
-    //启用 WS 时强制 SWOOLE_BASE 的启动前校验 WsServerModeCheckListener 同样由 common-core 自动注册(非 BASE 直接中止启动)
+
+return [
+    // 业务自定义 listener 写在这里。
+    // common-core 已自动注册基础错误处理、命令异常输出和 AsyncQueue timeout reload listener，不要在这里重复添加。
 ];
-return $listeners;

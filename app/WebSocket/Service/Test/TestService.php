@@ -8,9 +8,19 @@ use App\WebSocket\Conf\WsServerConf;
 use App\WebSocket\Service\BaseService;
 use Dleno\CommonCore\Tools\Strings\Strings;
 
-
+/**
+ * WS 示例 Service。
+ *
+ * 展示广播推送、按维度定向推送和心跳级在线检查的组合用法。
+ */
 class TestService extends BaseService
 {
+    /**
+     * 处理 WS 测试指令。
+     *
+     * @param array $post WS 消息体参数
+     * @return array
+     */
     public function index($post)
     {
         $cpt = get_inject_obj(WsPushMsgComponent::class);

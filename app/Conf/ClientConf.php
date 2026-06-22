@@ -2,6 +2,11 @@
 
 namespace App\Conf;
 
+/**
+ * 客户端类型枚举示例。
+ *
+ * 业务可按自己的端类型扩展，保持枚举值和展示文案集中维护。
+ */
 class ClientConf
 {
     /* 请求端系统定义 */
@@ -13,7 +18,7 @@ class ClientConf
     const OS_PC_LINUX = 5;//PC-linux;
     const OS_PC_OTHER = 6;//PC-other;
 
-    //请求端系统名称定义
+    //请求端系统名称映射
     public static $os = [
         self::OS_ANDROID  => 'Android',
         self::OS_IOS      => 'IOS',
@@ -32,7 +37,7 @@ class ClientConf
     const TERMINAL_WALLET_APP    = 5;//钱包APP
 
 
-    //请求端系统名称定义
+    //请求端终端类型名称映射
     public static $terminalType = [
         self::TERMINAL_TYPE_WEB      => '电脑网站',
         self::TERMINAL_TYPE_WAP      => '手机H5',

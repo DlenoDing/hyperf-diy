@@ -4,6 +4,11 @@ namespace App\Components\Test\Object;
 
 use Dleno\CommonCore\Traits\ObjectAttribute;
 
+/**
+ * 测试组件使用的数据对象示例。
+ *
+ * ObjectAttribute trait 提供 fill 等属性填充能力，适合把数组缓存数据转成结构化对象。
+ */
 class TestObject
 {
     use ObjectAttribute;

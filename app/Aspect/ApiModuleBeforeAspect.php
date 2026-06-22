@@ -31,7 +31,7 @@ class ApiModuleBeforeAspect extends AppModuleBeforeAspect
         if (CheckVal::checkInStatus(GlobalConf::WHITE_TYPE_TOKEN, $whiteVal)) {
             return;
         }
-        //TODO API 端 token 校验（示例）
+        //API 端 token 校验接入点（示例）
         /*$token = get_header_val('Client-Token', 0);
         $checkAuth = get_inject_obj(BlindBoxComponent::class)->checkAuth($token);
         if (!$checkAuth) {

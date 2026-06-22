@@ -11,7 +11,14 @@ class WsServerConf
     //本类仅声明业务自定义的 cmd 消息类型。
 
     //ws消息类型(业务自定义)
+    /**
+     * 系统通知消息。
+     */
     const CMD_TYPE_NOTICE      = 1;//系统通知
+
+    /**
+     * 用户私聊消息。
+     */
     const CMD_TYPE_PRIVATE_MSG = 2;//用户私聊信息
 
 }

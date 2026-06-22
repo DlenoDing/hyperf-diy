@@ -9,10 +9,18 @@ use Dleno\CommonCore\Exception\Http\HttpException;
 use Dleno\CommonCore\Tools\Client;
 use Dleno\CommonCore\Tools\Server;
 
+/**
+ * WS Controller 基类。
+ *
+ * 业务 WS Controller 统一继承此类，以复用 common-core 的请求、响应、校验和分布式锁能力。
+ */
 class BaseController extends BaseCoreController
 {
     /**
-     * 处理同一设备多线程并发访问
+     * 限制同一路由、同一设备在短时间内重复并发访问。
+     *
+     * WS 消息也可能出现客户端快速重复发送；需要幂等或限频的指令可调用此方法。
+     *
      * @param int $expire
      * @return bool
      * @throws HttpException

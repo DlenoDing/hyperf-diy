@@ -18,11 +18,13 @@ use function Hyperf\Support\env;
 
 return [
 
+    //应用基础信息，供日志、缓存前缀、环境判断等公共能力读取。
     'app_name'       => env('APP_NAME', 'Server-API'),
     'app_env'        => env('APP_ENV', 'local'),
     'app_scheme'     => env('HTTP_SCHEME', 'https'),
     'scan_cacheable' => env('SCAN_CACHEABLE', false),
 
+    //控制 Hyperf 标准输出日志等级，生产环境按需关闭 DEBUG。
     StdoutLoggerInterface::class => [
         'log_level' => [
             LogLevel::ALERT,

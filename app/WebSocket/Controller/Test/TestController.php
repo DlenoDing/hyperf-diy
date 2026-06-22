@@ -8,6 +8,11 @@ use App\WebSocket\Controller\BaseController;
 use App\WebSocket\Service\Test\TestService;
 use Dleno\CommonCore\Websocket\Annotation\WsController;
 
+/**
+ * WS 示例 Controller。
+ *
+ * 展示 WsController 注解、WS 消息参数校验、Service 调用和统一响应。
+ */
 #[WsController]
 class TestController extends BaseController
 {
@@ -16,6 +21,11 @@ class TestController extends BaseController
      */
     protected $service;
 
+    /**
+     * 示例 WS 指令入口。
+     *
+     * @return mixed
+     */
     public function index()
     {
         //参数校验

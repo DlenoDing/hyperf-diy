@@ -61,6 +61,9 @@ class BaseModelSplitTableTest extends TestCase
 {
     private string $database;
 
+    /**
+     * 每个用例前重建基表和清空 BaseModel 静态缓存，保证测试互相隔离。
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -79,6 +82,9 @@ class BaseModelSplitTableTest extends TestCase
         $this->createBaseTable('shard_test_t');
     }
 
+    /**
+     * 每个用例后清理测试表，避免污染本地测试数据库。
+     */
     protected function tearDown(): void
     {
         $this->cleanTables();
@@ -213,6 +219,9 @@ class BaseModelSplitTableTest extends TestCase
 
     //========================= 辅助方法 =========================
 
+    /**
+     * 清理 BaseModel 的静态表名缓存，避免不同测试用例互相污染。
+     */
     private function resetStaticCache(): void
     {
         $ref = new \ReflectionClass(BaseModel::class);
@@ -223,6 +232,9 @@ class BaseModelSplitTableTest extends TestCase
         }
     }
 
+    /**
+     * 创建分表测试基表。
+     */
     private function createBaseTable(string $name): void
     {
         Db::statement('DROP TABLE IF EXISTS `' . $name . '`');
@@ -235,6 +247,9 @@ class BaseModelSplitTableTest extends TestCase
         );
     }
 
+    /**
+     * 清理测试过程中创建的基表和分表。
+     */
     private function cleanTables(): void
     {
         $rows = Db::select(
@@ -251,6 +266,9 @@ class BaseModelSplitTableTest extends TestCase
         }
     }
 
+    /**
+     * 判断指定测试表是否存在。
+     */
     private function tableExists(string $name): bool
     {
         $rows = Db::select(

@@ -18,7 +18,10 @@ use PHPUnit\Framework\TestCase;
 use function Hyperf\Support\make;
 
 /**
- * Class HttpTestCase.
+ * HTTP 测试基类。
+ *
+ * 封装 Hyperf Testing Client，便于测试用例直接调用 get/post/json 等方法。
+ *
  * @method get($uri, $data = [], $headers = [])
  * @method post($uri, $data = [], $headers = [])
  * @method json($uri, $data = [], $headers = [])
@@ -32,12 +35,18 @@ abstract class HttpTestCase extends TestCase
      */
     protected $client;
 
+    /**
+     * 初始化 Hyperf 测试客户端。
+     */
     public function __construct($name = null, array $data = [], $dataName = '')
     {
         parent::__construct($name, $data, $dataName);
         $this->client = make(Client::class);
     }
 
+    /**
+     * 将 get/post/json/file/request 等调用代理到 Hyperf 测试客户端。
+     */
     public function __call($name, $arguments)
     {
         return $this->client->{$name}(...$arguments);

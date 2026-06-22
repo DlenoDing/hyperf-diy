@@ -20,6 +20,9 @@ use Hyperf\Testing\TestCase;
  */
 class ExampleTest extends TestCase
 {
+    /**
+     * 根路由健康检查应返回 200 和空内容。
+     */
     public function testExample()
     {
         $this->get('/')->assertOk()->assertContent('');
