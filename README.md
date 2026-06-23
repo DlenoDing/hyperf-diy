@@ -28,13 +28,13 @@ composer create-project dleno/hyperf-diy path/to/install
 cd path/to/install
 ```
 
-安装依赖：
+如果是 clone 源码，或使用 `composer create-project --no-install` 创建项目，再执行依赖安装：
 
 ```bash
 composer install
 ```
 
-本项目使用 `dleno/hyperf-env-multi` 管理环境配置。创建项目后会尝试复制 `.env.local.example` 到 `.env.local`。实际部署时请按环境准备 `.env` / `.env.local`，不要把生产密钥、数据库密码、RSA 私钥提交到仓库。
+本项目使用 `dleno/hyperf-env-multi` 管理环境配置。创建项目后会尝试复制 `.env.local.example` 到 `.env.local`。加载顺序固定为：先加载 `.env`，再根据 `APP_ENV` 加载 `.env.<APP_ENV>`；环境文件中的同名变量以后者为准。例如 `APP_ENV=local` 时，`.env.local` 会覆盖 `.env` 中的同名配置。common-core 会在自己的 `ConfigProvider` 读取 `env()` 前显式调用 `EnvLoader::load(BASE_PATH)`，因此 `ENABLE_HTTP` / `ENABLE_WS` 等早期配置也会读取到环境覆盖后的值。实际部署时请按环境准备 `.env` / `.env.<APP_ENV>`，不要把生产密钥、数据库密码、RSA 私钥提交到仓库。
 
 ## 快速启动
 
@@ -112,7 +112,7 @@ Dleno\CommonCore\Websocket\Contract\WsHookInterface::class
 其中：
 
 - HTTP 请求解析和请求对象必须由业务项目配置覆盖，保证优先级高于 Hyperf 默认绑定。
-- WebSocket 绑定策略和 Hook 属于业务决策，common-core 不提供强制默认实现。
+- WebSocket 绑定策略属于业务决策，`WsBindStrategyInterface` 必须由业务项目绑定；`WsHookInterface` 在 common-core 中有 no-op 默认实现，本项目覆盖它是为了展示登录态解析、握手鉴权和生命周期钩子的推荐接入方式。
 - HTTP / WS 基础中间件由 common-core `ConfigProvider` 根据 `ENABLE_HTTP` / `ENABLE_WS` 自动注入，业务不要重复追加同名中间件；如要接管，先关闭对应 env 开关。
 - HTTP / WS 输出日志切面由 common-core 自动注册，业务项目不需要声明自己的 `ApiOutputAspect`。
 - 默认 HTTP / WS 异常链由 common-core `ExceptionHandlerConfig` 生成；`config/autoload/exceptions.php` 保留为业务 handler 的顺序控制入口。
@@ -160,6 +160,7 @@ return [
 - `lockThread()` 展示按路由和设备号做并发访问限制。
 - `AppModuleBeforeAspect` / `ApiModuleBeforeAspect` / `AdminModuleBeforeAspect` 展示接口签名、解密、API/Admin 鉴权分流的接入点。
 - HTTP 响应日志和响应加密由 common-core 输出切面统一处理。
+- AutoController 请求方式按“方法级 `#[AllowMethods]` → 类级 `AutoController(defaultMethods)` → `config('app.default_allow_methods')` → 默认 `['POST', 'GET']`”解析；包含 `GET` 时自动补 `HEAD`，`OPTIONS` 预检由 common-core `InitMiddleware` 统一处理。
 
 示例请求：
 
@@ -403,7 +404,11 @@ WebSocket：
 - `WS_REALTIME_ONLINE_TIMEOUT`
 - `WS_CONSUMER_PROCESSES`
 - `WS_CONSUMER_LIMIT`
+- `WS_CONSUMER_MAX_MESSAGES`
 - `WS_DEDICATED_QUEUE_ENABLE`
+- `WS_DEDICATED_PROCESSES`
+- `WS_DEDICATED_LIMIT`
+- `WS_DEDICATED_MAX_MESSAGES`
 
 数据库 / Redis / AMQP：
 
