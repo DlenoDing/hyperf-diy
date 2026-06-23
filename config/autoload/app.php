@@ -33,8 +33,9 @@ return [
             //其他需求定义
         ]
     ),
-    //跨域设置-允许的请求类型
-    'ac_allow_methods'      => ['POST', 'GET', 'HEAD'],
+    //AutoController 路由的默认请求方式(无 #[AllowMethods]/类 defaultMethods 时用此)；含 GET 时框架自动补 HEAD。
+    //OPTIONS 预检由 InitMiddleware 全局处理，无需在此列。
+    'default_allow_methods' => ['POST', 'GET'],
     //跨域设置-允许的header
     'ac_allow_headers'      => [
         "Content-Type",             //请求内容类型
