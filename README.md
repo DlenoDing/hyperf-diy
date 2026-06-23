@@ -253,30 +253,29 @@ WS 业务消息示例：
 
 配置：`config/autoload/async_queue.php`
 
-示例：
+示例（静态队列 + 动态队列两套，目录结构与 `common-core/examples/AsyncQueue` 一致）：
 
-- `app/AsyncQueue/Job/TestJob.php`
-- `app/AsyncQueue/Process/DefaultQueueConsumer.php`
-- `app/AsyncQueue/Process/TestQueueConsumer.php`
-- `app/AsyncQueue/Process/DcsMessageConsumer.php`
+- `app/AsyncQueue/Job/TestJob.php`：Job 示例；`pushNormalExample()` 普通（立即）投递、`pushDelayExample()` 延时投递分别演示（延时即 `AsyncQueue::push($job, $delay)` 的第二参，单位秒）。
+- `app/AsyncQueue/Process/TestAsyncQueueConsumer.php`：消费 `test` 队列的进程示例。
+- `app/AsyncQueue/Dynamic/Job/DynamicJob.php` + `app/AsyncQueue/Dynamic/Process/DynamicQueueConsumer.php`：按服务器 IP 生成动态队列名（每台机消费自己的队列）的示例。
 
 说明：
 
-- `BaseQueueConsumer` 来自 common-core。
-- Job 可指定 `$queue`，`AsyncQueue::push()` 会按队列名选择 driver。
-- `DcsMessageConsumer` 展示按服务器 IP 生成动态队列名的写法，适合需要按节点分发的场景。
-- 示例 Consumer 多数默认 `isEnable()` 返回 false，避免脚手架启动后拉起无意义的测试进程；业务启用前应明确队列名、并发和配置。
+- `BaseQueueConsumer` / `BaseJob` 来自 common-core。
+- Job 可指定 `$queue`，`AsyncQueue::push()` 会按队列名选择 driver；队列未在 `async_queue.php` 配置时，Job 的 `getConfig()` 复用 default 配置自动注册。
+- redis 异步队列只有「普通 + 延时」两种投递（无死信能力，死信是 AMQP 的特性，见下）。
+- 示例 Consumer 默认 `isEnable()` 返回 false，避免脚手架启动后拉起无意义的测试进程；业务启用前应明确队列名、并发和配置。
 
 ### AMQP
 
 配置：`config/autoload/amqp.php`
 
-示例：
+示例（三种调用方式分别成对，目录结构与 `common-core/examples/Amqp` 一致）：
 
-- `app/Amqp/Producer/TestProducer.php`
-- `app/Amqp/Consumer/TestConsumer.php`
-- `app/Amqp/Producer/DcsTestProducer.php`
-- `app/Amqp/Consumer/DcsTestConsumer.php`
+- 普通调用：`app/Amqp/Producer/NormalProducer.php` + `app/Amqp/Consumer/NormalConsumer.php`（直连交换机、立即投递）。
+- 延时调用：`app/Amqp/Producer/DelayProducer.php` + `app/Amqp/Consumer/DelayConsumer.php`（`delayExchange=true`，x-delayed-message 插件方案，生产/消费须一致）。
+- 延时到死信调用：`app/Amqp/Producer/DelayDlxProducer.php` → `app/Amqp/Consumer/DelayDlxBufferConsumer.php`（声明带 x-message-ttl + 死信的延时缓冲队列，**无活跃消费者**）→ 过期转投死信 → `app/Amqp/Consumer/DelayDlxDeadConsumer.php` 消费（不依赖延时插件的延时方案）。
+- 动态路由：`app/Amqp/Producer/DcsTestProducer.php` + `app/Amqp/Consumer/DcsTestConsumer.php`（按服务器动态 routingKey / queue）。
 
 启用：
 
@@ -292,8 +291,8 @@ AMQP_VHOST=/
 说明：
 
 - `BaseProducer` / `BaseConsumer` 来自 common-core。
-- 支持延迟交换机、死信交换机、消息 TTL、队列 TTL。
-- `DcsTestProducer` / `DcsTestConsumer` 展示按服务器动态 routingKey / queue 的模式。
+- 两种延时实现：① 延迟交换机（x-delayed-message 插件，见「延时调用」）；② 死信交换机 + 消息 TTL + 队列 TTL（TTL 到期转死信，见「延时到死信调用」，不需插件）。生产者与消费者的 `delayExchange` 必须一致；TTL 延时缓冲队列必须无活跃消费者。
+- 延时插件方案需 RabbitMQ 安装 `rabbitmq_delayed_message_exchange` 插件；TTL+死信方案不需要插件。
 
 ### Crontab / Process
 
