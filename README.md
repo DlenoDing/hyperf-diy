@@ -276,6 +276,7 @@ WS 业务消息示例：
 - 延时调用：`app/Amqp/Producer/DelayProducer.php` + `app/Amqp/Consumer/DelayConsumer.php`（`delayExchange=true`，x-delayed-message 插件方案，生产/消费须一致）。
 - 延时到死信调用：`app/Amqp/Producer/DelayDlxProducer.php` → `app/Amqp/Consumer/DelayDlxBufferConsumer.php`（声明带 x-message-ttl + 死信的延时缓冲队列，**无活跃消费者**）→ 过期转投死信 → `app/Amqp/Consumer/DelayDlxDeadConsumer.php` 消费（不依赖延时插件的延时方案）。
 - 动态路由：`app/Amqp/Producer/DcsTestProducer.php` + `app/Amqp/Consumer/DcsTestConsumer.php`（按服务器动态 routingKey / queue）。
+- AMQP 示例 Consumer 保留 `AMQP_ENABLE` 前置门禁，但示例自身仍默认 `return false`，业务确认队列名、并发和消费逻辑后再改成自己的启用条件。
 
 启用：
 
@@ -311,7 +312,7 @@ ENABLE_CRONTAB=true
 
 Crontab 调度进程由 common-core `ConfigProvider` 按 `ENABLE_CRONTAB` 自动注册；`config/autoload/processes.php` 只用于追加业务自定义 Process，不要重复添加 Crontab 调度进程。
 
-示例里的自定义 Process / Crontab 默认关闭，业务使用时应先确认不会产生重复消费、重复任务或本地调试副作用。
+示例里的自定义 Process / Crontab 默认关闭；Crontab 示例保留 `ENABLE_CRONTAB` 前置门禁，业务使用时应先确认不会产生重复消费、重复任务或本地调试副作用。
 
 ## Model 与分表
 

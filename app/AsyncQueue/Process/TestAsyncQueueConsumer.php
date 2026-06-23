@@ -30,8 +30,11 @@ class TestAsyncQueueConsumer extends BaseQueueConsumer
 
     public function isEnable($server): bool
     {
-        // 脚手架默认关闭示例消费进程；业务确认队列配置后改为按环境启用，例如：
-        // return config('app_env') !== 'local';
+        if (config('app_env') === 'local') {
+            return false;
+        }
+
+        // 脚手架默认关闭示例消费进程；业务确认队列配置后改为自己的环境开关。
         return false;
     }
 }

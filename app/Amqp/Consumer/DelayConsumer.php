@@ -16,6 +16,7 @@ use function Hyperf\Support\env;
  *
  * delayExchange=true 必须与生产者一致，否则交换机类型（x-delayed-message）声明冲突。
  * 延时到点的消息才会进入本队列被消费。
+ * 脚手架默认强制关闭，业务确认队列名、并发和消费逻辑后再改为自己的环境开关。
  */
 #[Consumer(exchange: 'AppExampleDelayExchange', routingKey: 'AppExampleDelayRouting', queue: 'AppExampleDelayQueue', name: 'AppExampleDelayConsumer', nums: 1)]
 class DelayConsumer extends BaseConsumer
@@ -48,6 +49,11 @@ class DelayConsumer extends BaseConsumer
         if (!env('AMQP_ENABLE', false)) {
             return false;
         }
-        return config('app_env') !== 'local';
+
+        if (config('app_env') === 'local') {
+            return false;
+        }
+
+        return false;
     }
 }

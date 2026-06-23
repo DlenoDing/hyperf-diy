@@ -17,6 +17,7 @@ use function Hyperf\Support\env;
  * 绑定死信交换机/路由（与 {@see DelayDlxBufferConsumer} 的 deadExchange/deadRoutingKey 一致）。
  * 缓冲队列里的消息滞留 TTL 秒过期后会被转投到这里 —— 此处收到即“延时到点”，做真正的业务处理。
  * 如涉及分布式，可在此把消息再投递到对应节点的队列。
+ * 脚手架默认强制关闭，业务确认队列名、并发和消费逻辑后再改为自己的环境开关。
  */
 #[Consumer(exchange: 'AppExampleDelayDlxDeadExchange', routingKey: 'AppExampleDelayDlxDeadRouting', queue: 'AppExampleDelayDlxDeadQueue', name: 'AppExampleDelayDlxDeadConsumer', nums: 1)]
 class DelayDlxDeadConsumer extends BaseConsumer
@@ -44,6 +45,11 @@ class DelayDlxDeadConsumer extends BaseConsumer
         if (!env('AMQP_ENABLE', false)) {
             return false;
         }
-        return config('app_env') !== 'local';
+
+        if (config('app_env') === 'local') {
+            return false;
+        }
+
+        return false;
     }
 }

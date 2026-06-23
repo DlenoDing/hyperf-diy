@@ -14,7 +14,7 @@ use function Hyperf\Support\env;
 /**
  * 【普通调用】AMQP 普通（直连）消费者示例，与 {@see \App\Amqp\Producer\NormalProducer} 配对。
  *
- * 默认只在 AMQP_ENABLE=true 且非 local 环境启用，避免脚手架本地启动时误消费。
+ * 脚手架默认强制关闭，业务确认队列名、并发和消费逻辑后再改为自己的环境开关。
  */
 #[Consumer(exchange: 'AppExampleNormalExchange', routingKey: 'AppExampleNormalRouting', queue: 'AppExampleNormalQueue', name: 'AppExampleNormalConsumer', nums: 1)]
 class NormalConsumer extends BaseConsumer
@@ -42,6 +42,11 @@ class NormalConsumer extends BaseConsumer
         if (!env('AMQP_ENABLE', false)) {
             return false;
         }
-        return config('app_env') !== 'local';
+
+        if (config('app_env') === 'local') {
+            return false;
+        }
+
+        return false;
     }
 }

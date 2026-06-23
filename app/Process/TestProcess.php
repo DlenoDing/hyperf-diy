@@ -62,15 +62,14 @@ class TestProcess extends AbstractProcess
     /**
      * 控制示例 Process 是否启用。
      *
-     * 当前脚手架默认强制关闭，业务确认逻辑后再删除 return false 或改成 env 开关。
+     * local 环境始终关闭；非 local 也默认关闭，业务确认逻辑后再改成自己的环境开关。
      */
     public function isEnable($server): bool
     {
-        return false;
-        $env = config('app_env');
-        if ($env === 'local') {
+        if (config('app_env') === 'local') {
             return false;
         }
-        return true;
+
+        return false;
     }
 }

@@ -5,6 +5,7 @@ use Dleno\CommonCore\Tools\Logger;
 use Hyperf\Crontab\Annotation\Crontab;
 
 use function Hyperf\Config\config;
+use function Hyperf\Support\env;
 
 /**
  * Crontab 示例任务。
@@ -25,15 +26,18 @@ class TestCrontab
     /**
      * 控制定时任务是否启用。
      *
-     * 当前脚手架默认强制关闭，业务确认逻辑后再删除 return false 或改成 env 开关。
+     * local 环境始终关闭；非 local 也默认关闭，业务确认逻辑后再改成自己的环境开关。
      */
     public function isEnable(): bool
     {
-        return false;
-        $env = config('app_env');
-        if ($env === 'local') {
+        if (!env('ENABLE_CRONTAB', false)) {
             return false;
         }
-        return true;
+
+        if (config('app_env') === 'local') {
+            return false;
+        }
+
+        return false;
     }
 }

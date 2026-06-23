@@ -14,6 +14,7 @@ use function Hyperf\Support\env;
  * AMQP 动态队列消费者示例。
  *
  * 根据当前服务器 IP 生成 routingKey/queue，适合节点级定向消费场景。
+ * 脚手架默认强制关闭，业务确认队列名、并发和消费逻辑后再改为自己的环境开关。
  */
 #[Consumer(exchange: "DcsTestExchange", name: "DcsTestConsumer", nums: 1)]
 class DcsTestConsumer extends BaseConsumer
@@ -89,10 +90,11 @@ class DcsTestConsumer extends BaseConsumer
         if (!env('AMQP_ENABLE', false)) {
             return false;
         }
-        $env = config('app_env');
-        if ($env === 'local') {
+
+        if (config('app_env') === 'local') {
             return false;
         }
-        return true;
+
+        return false;
     }
 }
