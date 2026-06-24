@@ -15,6 +15,12 @@ return [
     Hyperf\HttpMessage\Server\RequestParserInterface::class => Dleno\CommonCore\Core\Request\RequestParser::class,
     Hyperf\HttpServer\Contract\RequestInterface::class      => Dleno\CommonCore\Core\Request\Request::class,
 
+    //模块前置中间件（签名校验/数据解密/登录校验）：common-core 已在 InitMiddleware 后自动注册基类
+    //AbstractModuleBeforeMiddleware（同一 HTTP_INIT_MIDDLEWARE_ENABLE 开关）。此处把基类绑到本项目子类即覆盖生效；
+    //不绑则走父类 no-op 鉴权（签名/解密仍按 config 开关执行）。
+    Dleno\CommonCore\Middleware\Http\AbstractModuleBeforeMiddleware::class
+        => App\Middleware\AppModuleBeforeMiddleware::class,
+
     //WS 连接绑定策略（业务必须绑定，无包内默认）：默认用脚手架自带实现 = 只绑 account_id；
     //需要多端/设备维度时，改成自己的实现（参照 DefaultWsBindStrategy 复制一份并扩展 device 等维度）。
     Dleno\CommonCore\Websocket\Contract\WsBindStrategyInterface::class

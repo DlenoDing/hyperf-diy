@@ -81,7 +81,7 @@ app/Controller               HTTP Controller 示例
 app/Service                  HTTP Service 示例
 app/Components               业务组件 / 本地缓存 / Redis 缓存示例
 app/Model                    BaseModel、普通模型、分表模型示例
-app/Aspect                   API / Admin 前置切面示例
+app/Middleware               模块前置中间件示例（未知路由 404 / 签名 / 解密 / 登录鉴权）
 app/Amqp                     AMQP Producer / Consumer 示例
 app/AsyncQueue               AsyncQueue Job / Consumer 示例
 app/Process                  自定义 Process 示例
@@ -158,7 +158,7 @@ return [
 - `checkParams()` 使用 Hyperf validation 规则校验请求参数。
 - `successData()` 输出 common-core 统一 JSON 格式。
 - `lockThread()` 展示按路由和设备号做并发访问限制。
-- `AppModuleBeforeAspect` / `ApiModuleBeforeAspect` / `AdminModuleBeforeAspect` 展示接口签名、解密、API/Admin 鉴权分流的接入点。
+- `app/Middleware/AppModuleBeforeMiddleware` 展示接口签名、解密、登录鉴权的接入点（单类内按 `ApiServer::isAdminModule()` 分流 API/Admin）。继承 common-core `AbstractModuleBeforeMiddleware` 并在 `config/autoload/dependencies.php` 绑定生效；签名/解密通用流程在父类，本类只覆写 `checkAuth()` / `checkReplay()`。
 - HTTP 响应日志和响应加密由 common-core 输出切面统一处理。
 - AutoController 请求方式按“方法级 `#[AllowMethods]` → 类级 `AutoController(defaultMethods)` → `config('app.default_allow_methods')` → 默认 `['POST', 'GET']`”解析；包含 `GET` 时自动补 `HEAD`，`OPTIONS` 预检由 common-core `InitMiddleware` 统一处理。
 
@@ -354,7 +354,7 @@ Crontab 调度进程由 common-core `ConfigProvider` 按 `ENABLE_CRONTAB` 自动
 
 - HTTP 响应加密由 common-core 输出切面处理，开关为 `API_DATA_CRYPT`。
 - `Client-Key`（AES 密钥）的 RSA 解密使用 `OpenSslRsa2`（密文 base64，比 `OpenSslRsa` 的 hex 约短一半），客户端加密 `Client-Key` 须使用同款算法。
-- 防重放默认不开启：`AbstractModuleBeforeAspect::checkReplay()` 默认放行。如需拦截「同一已签名请求在 `SIGN_EXPIRE` 窗口内被原样重放」，在 `AppModuleBeforeAspect::checkReplay()` 删除开头的 `return true;` 即启用示例实现（以整段签名 `Client-Sign` 为维度 `SET NX` 占位，命中即判定重放）；仅对非幂等接口有意义，会给签名请求增加一次 Redis 往返。
+- 防重放默认不开启：`AbstractModuleBeforeMiddleware::checkReplay()` 默认放行。如需拦截「同一已签名请求在 `SIGN_EXPIRE` 窗口内被原样重放」，在 `app/Middleware/AppModuleBeforeMiddleware::checkReplay()` 删除开头的 `return true;` 即启用示例实现（以整段签名 `Client-Sign` 为维度 `SET NX` 占位，命中即判定重放）；仅对非幂等接口有意义，会给签名请求增加一次 Redis 往返。
 - 仓库中的 `.env` 仅适合作为开发模板参考，生产环境必须使用独立密钥。
 - 不要把生产 `SIGN_KEY`、RSA 私钥、数据库密码、Redis 密码提交到仓库。
 - `filter_headers` 会过滤访问日志中的敏感请求头，业务新增敏感头时应同步加入。
