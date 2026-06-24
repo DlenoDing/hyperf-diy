@@ -103,6 +103,9 @@ Hyperf\HttpMessage\Server\RequestParserInterface::class
 Hyperf\HttpServer\Contract\RequestInterface::class
     => Dleno\CommonCore\Core\Request\Request::class,
 
+Dleno\CommonCore\Middleware\Http\AbstractModuleBeforeMiddleware::class
+    => App\Middleware\AppModuleBeforeMiddleware::class,
+
 Dleno\CommonCore\Websocket\Contract\WsBindStrategyInterface::class
     => App\WebSocket\Bind\DefaultWsBindStrategy::class,
 Dleno\CommonCore\Websocket\Contract\WsHookInterface::class
@@ -112,6 +115,7 @@ Dleno\CommonCore\Websocket\Contract\WsHookInterface::class
 其中：
 
 - HTTP 请求解析和请求对象必须由业务项目配置覆盖，保证优先级高于 Hyperf 默认绑定。
+- HTTP 模块前置中间件由 common-core 自动注册抽象基类，本项目绑定到 `AppModuleBeforeMiddleware`，用于接入登录校验和防重放示例；不绑定时会走 common-core 默认实现，签名/解密仍按开关执行，但业务登录校验为 no-op。
 - WebSocket 绑定策略属于业务决策，`WsBindStrategyInterface` 必须由业务项目绑定；`WsHookInterface` 在 common-core 中有 no-op 默认实现，本项目覆盖它是为了展示登录态解析、握手鉴权和生命周期钩子的推荐接入方式。
 - HTTP / WS 基础中间件由 common-core `ConfigProvider` 根据 `ENABLE_HTTP` / `ENABLE_WS` 自动注入，业务不要重复追加同名中间件；如要接管，先关闭对应 env 开关。
 - HTTP / WS 输出日志切面由 common-core 自动注册，业务项目不需要声明自己的 `ApiOutputAspect`。
@@ -158,7 +162,7 @@ return [
 - `checkParams()` 使用 Hyperf validation 规则校验请求参数。
 - `successData()` 输出 common-core 统一 JSON 格式。
 - `lockThread()` 展示按路由和设备号做并发访问限制。
-- `app/Middleware/AppModuleBeforeMiddleware` 展示接口签名、解密、登录鉴权的接入点（单类内按 `ApiServer::isAdminModule()` 分流 API/Admin）。继承 common-core `AbstractModuleBeforeMiddleware` 并在 `config/autoload/dependencies.php` 绑定生效；签名/解密通用流程在父类，本类只覆写 `checkAuth()` / `checkReplay()`。
+- `app/Middleware/AppModuleBeforeMiddleware` 展示接口签名、解密、登录鉴权的接入点（单类内按 `ApiServer::isAdminModule()` 分流 API/Admin）。继承 common-core `DefaultModuleBeforeMiddleware` 并在 `config/autoload/dependencies.php` 绑定到 `AbstractModuleBeforeMiddleware` 后生效；签名/解密通用流程在父类，本类只覆写 `checkAuth()` / `checkReplay()`。
 - HTTP 响应日志和响应加密由 common-core 输出切面统一处理。
 - AutoController 请求方式按“方法级 `#[AllowMethods]` → 类级 `AutoController(defaultMethods)` → `config('app.default_allow_methods')` → 默认 `['POST', 'GET']`”解析；包含 `GET` 时自动补 `HEAD`，`OPTIONS` 预检由 common-core `InitMiddleware` 统一处理。
 
@@ -354,18 +358,32 @@ Crontab 调度进程由 common-core `ConfigProvider` 按 `ENABLE_CRONTAB` 自动
 
 - HTTP 响应加密由 common-core 输出切面处理，开关为 `API_DATA_CRYPT`。
 - `Client-Key`（AES 密钥）的 RSA 解密使用 `OpenSslRsa2`（密文 base64，比 `OpenSslRsa` 的 hex 约短一半），客户端加密 `Client-Key` 须使用同款算法。
-- 防重放默认不开启：`AbstractModuleBeforeMiddleware::checkReplay()` 默认放行。如需拦截「同一已签名请求在 `SIGN_EXPIRE` 窗口内被原样重放」，在 `app/Middleware/AppModuleBeforeMiddleware::checkReplay()` 删除开头的 `return true;` 即启用示例实现（以整段签名 `Client-Sign` 为维度 `SET NX` 占位，命中即判定重放）；仅对非幂等接口有意义，会给签名请求增加一次 Redis 往返。
+- 防重放默认不开启：包内 `DefaultModuleBeforeMiddleware::checkReplay()` 默认放行。如需拦截「同一已签名请求在 `SIGN_EXPIRE` 窗口内被原样重放」，在 `app/Middleware/AppModuleBeforeMiddleware::checkReplay()` 删除开头的 `return true;` 即启用示例实现（以整段签名 `Client-Sign` 为维度 `SET NX` 占位，命中即判定重放）；仅对非幂等接口有意义，会给签名请求增加一次 Redis 往返。
 - 仓库中的 `.env` 仅适合作为开发模板参考，生产环境必须使用独立密钥。
 - 不要把生产 `SIGN_KEY`、RSA 私钥、数据库密码、Redis 密码提交到仓库。
 - `filter_headers` 会过滤访问日志中的敏感请求头，业务新增敏感头时应同步加入。
+
+## 日志与 DingTalk 告警
+
+日志配置入口：
+
+- `config/autoload/logger.php`：使用 common-core 的默认日志分组和 handler。
+- `config/autoload/dingtalk.php`：普通系统通知和异常追踪机器人配置，默认关闭。
+
+异常输出会读取 `dingtalk.trace` 指定的机器人配置；未配置、未启用或 token/secret 为空时不会发送通知。生产启用前应准备独立机器人密钥，并确认 Redis 可用，因为 DingTalk 发送频率限制使用 Redis pool。
 
 ## 重要环境变量
 
 基础：
 
+- `APP_NAME`
 - `APP_ENV`
+- `IS_PROD`
 - `APP_DEBUG`
+- `HTTP_SCHEME`
+- `SCAN_CACHEABLE`
 - `DATE_DEFAULT_TIMEZONE`
+- `LOG_MAX_FILES`
 - `ENABLE_HTTP`
 - `HTTP_PORT`
 - `ENABLE_WS`
@@ -378,8 +396,13 @@ Swoole：
 - `MAX_COROUTINE`
 - `MAX_REQUEST`
 - `REACTOR_NUM`
+- `SOCKET_BUFFER_SIZE`
+- `BUFFER_OUTPUT_SIZE`
+- `BACKLOG`
+- `MAX_WAIT_TIME`
 - `PACKAGE_MAX_LENGTH`
 - `WS_PACKAGE_MAX_LENGTH`
+- `WEBSOCKET_COMPRESSION`
 - `WS_HEARTBEAT_CHECK_INTERVAL`
 - `WS_HEARTBEAT_IDLE_TIME`
 
@@ -388,14 +411,18 @@ HTTP / API：
 - `ROUTE_PREFIX`
 - `ROUTE_SUFFIX`
 - `ADMIN_MODULE_NAME`
+- `HTTP_INIT_MIDDLEWARE_ENABLE`
 - `API_DATA_CRYPT`
 - `API_CHECK_SIGN`
 - `SIGN_KEY`
 - `SIGN_PREFIX`
 - `SIGN_EXPIRE`
+- `RSA_PRIVATE_KEY`
+- `RSA_PUBLIC_KEY`
 
 WebSocket：
 
+- `WS_AUTH_MIDDLEWARE_ENABLE`
 - `WS_LOCAL_ENABLE`
 - `WS_KEY_PREFIX`
 - `WS_SERVER_SET_CACHE_MS`
@@ -412,21 +439,89 @@ WebSocket：
 
 数据库 / Redis / AMQP：
 
+- `DB_DRIVER`
 - `DB_HOST`
 - `DB_PORT`
 - `DB_DATABASE`
 - `DB_USERNAME`
 - `DB_PASSWORD`
+- `DB_CHARSET`
+- `DB_COLLATION`
+- `DB_PREFIX`
+- `DB_MIN_CONNECTION`
+- `DB_MAX_CONNECTION`
+- `DB_CONNECT_TIMEOUT`
+- `DB_WAIT_TIMEOUT`
+- `DB_HEARTBEAT`
+- `DB_MAX_IDLE_TIME`
+- `DB_READ_HOST`
+- `DB_WRITE_HOST`
+- `DB_READ_MIN_CONNECTION`
+- `DB_READ_MAX_CONNECTION`
+- `DB_READ_CONNECT_TIMEOUT`
+- `DB_READ_WAIT_TIMEOUT`
+- `DB_READ_HEARTBEAT`
+- `DB_READ_MAX_IDLE_TIME`
+- `DB_WRITE_MIN_CONNECTION`
+- `DB_WRITE_MAX_CONNECTION`
+- `DB_WRITE_CONNECT_TIMEOUT`
+- `DB_WRITE_WAIT_TIMEOUT`
+- `DB_WRITE_HEARTBEAT`
+- `DB_WRITE_MAX_IDLE_TIME`
 - `REDIS_HOST`
 - `REDIS_PORT`
 - `REDIS_AUTH`
 - `REDIS_USER`
 - `REDIS_DB`
+- `REDIS_MIN_CONNECTION`
+- `REDIS_MAX_CONNECTION`
+- `REDIS_CONNECT_TIMEOUT`
+- `REDIS_WAIT_TIMEOUT`
+- `REDIS_HEARTBEAT`
+- `REDIS_MAX_IDLE_TIME`
 - `AMQP_ENABLE`
+- `AMQP_OPEN_SSL`
 - `AMQP_HOST`
 - `AMQP_PORT`
 - `AMQP_USER`
 - `AMQP_PASSWORD`
+- `AMQP_VHOST`
+- `AMQP_CONNECTION`
+- `AMQP_MIN_CONNECTION`
+- `AMQP_MAX_CONNECTION`
+- `AMQP_CONNECT_TIMEOUT`
+- `AMQP_WAIT_TIMEOUT`
+- `AMQP_READ_WRITE_TIMEOUT`
+- `AMQP_HEARTBEAT`
+- `AMQP_MAX_IDLE_CHANNELS`
+
+RPC / 服务发现：
+
+- `CONSUL_SERVER_URI`
+- `RPC_CONNECT_TIMEOUT`
+- `RPC_RECV_TIMEOUT`
+- `RPC_MIN_CONNECTION`
+- `RPC_MAX_CONNECTION`
+- `RPC_WAIT_TIMEOUT`
+- `RPC_HEARTBEAT`
+- `RPC_MAX_IDLE_TIME`
+
+DingTalk：
+
+- `DINGTALK_ROBOT_ENABLE`
+- `DINGTALK_ROBOT_NAME`
+- `DINGTALK_ROBOT_FREQUENCY`
+- `DINGTALK_ROBOT_01_TOKEN`
+- `DINGTALK_ROBOT_01_SECRET`
+- `DINGTALK_ROBOT_02_TOKEN`
+- `DINGTALK_ROBOT_02_SECRET`
+- `DINGTALK_TRACE_ENABLE`
+- `DINGTALK_TRACE_NAME`
+- `DINGTALK_TRACE_FREQUENCY`
+- `DINGTALK_TRACE_01_TOKEN`
+- `DINGTALK_TRACE_01_SECRET`
+- `DINGTALK_TRACE_02_TOKEN`
+- `DINGTALK_TRACE_02_SECRET`
 
 ## 测试与静态分析
 
