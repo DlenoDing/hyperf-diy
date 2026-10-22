@@ -5,7 +5,7 @@
 # @contact  group@hyperf.io
 # @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
 
-FROM registry.cn-hangzhou.aliyuncs.com/dleno-server/php:alp321-php84-sw6.1.0
+FROM registry.cn-hangzhou.aliyuncs.com/dleno-server/php:alp324-php84-sw6.2.3
 LABEL maintainer="Hyperf Developers <group@hyperf.io>" version="1.0" license="MIT" app.name="Hyperf"
 
 ##
