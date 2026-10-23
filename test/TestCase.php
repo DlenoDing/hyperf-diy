@@ -17,19 +17,20 @@ use Hyperf\Testing\TestCase as HyperfTestCase;
 /**
  * 测试基类。
  *
- * Hyperf\Testing\TestCase::setUp() 每个用例都会重建容器并触发 BootApplication,
- * ErrorExceptionHandler 监听器随之再 set_error_handler 一次;PHPUnit 11 会把未还原的 handler 判为 risky。
- * 这里记录 setUp 期间新压入的 handler 数,tearDown 时逐个弹出,保持 handler 栈与用例开始前一致。
+ * Hyperf\Testing\TestCase::setUp() 每个用例都会重建容器并触发 BootApplication(ErrorExceptionHandler 再次 set_error_handler);
+ * 用例中首次懒加载翻译/日志等组件也会压入 handler,且部分库以 set_error_handler($prev) 方式"还原"(重复压入同一对象)。
+ * PHPUnit 11 会把 handler 栈变化判为 risky,因此在 setUp 前完整记录 handler 栈,tearDown 后原样恢复。
  */
 abstract class TestCase extends HyperfTestCase
 {
-    private int $pushedErrorHandlers = 0;
+    /** @var array 用例开始前的 error handler 栈(自底向上) */
+    private array $handlerStack = [];
 
     protected function setUp(): void
     {
-        $before = $this->currentErrorHandler();
+        $this->handlerStack = self::popAllHandlers();
+        self::pushHandlers($this->handlerStack);
         parent::setUp();
-        $this->pushedErrorHandlers = $this->currentErrorHandler() === $before ? 0 : 1;
     }
 
     protected function tearDown(): void
@@ -37,16 +38,33 @@ abstract class TestCase extends HyperfTestCase
         try {
             parent::tearDown();
         } finally {
-            for (; $this->pushedErrorHandlers > 0; --$this->pushedErrorHandlers) {
-                restore_error_handler();
-            }
+            self::popAllHandlers();
+            self::pushHandlers($this->handlerStack);
         }
     }
 
-    private function currentErrorHandler(): mixed
+    /**
+     * 弹出全部 error handler,返回自底向上的列表
+     */
+    private static function popAllHandlers(): array
     {
-        $handler = set_error_handler(static fn () => false);
-        restore_error_handler();
-        return $handler;
+        $stack = [];
+        for ($i = 0; $i < 500; $i++) {
+            $current = set_error_handler(static fn () => false);
+            restore_error_handler();
+            if ($current === null) {
+                break;
+            }
+            $stack[] = $current;
+            restore_error_handler();
+        }
+        return array_reverse($stack);
+    }
+
+    private static function pushHandlers(array $stack): void
+    {
+        foreach ($stack as $handler) {
+            set_error_handler($handler);
+        }
     }
 }
