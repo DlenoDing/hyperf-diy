@@ -1,3 +1,12 @@
 .git
 runtime/
 vendor/
+# 本地锁文件不入库(.gitignore *.lock),镜像内按 composer.json 重新解析,避免本地残留旧锁(如 3.1)混入构建
+composer.lock
+# 本地环境覆盖/凭据只用于开发机,不打进镜像;生产凭据经运行时环境变量或 Secret 注入
+.env.local
+# 开发模板(含演示签名密钥/RSA 密钥对),镜像不需要
+.env.local.example
+.phpunit.cache/
+.idea/
+.DS_Store

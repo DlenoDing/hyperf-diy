@@ -8,7 +8,8 @@ use Dleno\CommonCore\Tools\Lock\DcsLock;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\Coroutine\Coroutine;
 use Hyperf\Redis\RedisFactory;
-use Hyperf\Testing\TestCase;
+use HyperfTest\TestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use Swoole\Coroutine\WaitGroup;
 
 use function Hyperf\Config\config;
@@ -20,8 +21,8 @@ use function Hyperf\Config\config;
  * 需要本地 redis（由 .env.testing 指向 redis 容器）。
  *
  * @internal
- * @coversNothing
  */
+#[CoversNothing]
 class DcsLockConcurrencyTest extends TestCase
 {
     private const LOCK_KEY = 'lock:concurrency:test';

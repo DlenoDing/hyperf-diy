@@ -37,10 +37,11 @@ abstract class HttpTestCase extends TestCase
 
     /**
      * 初始化 Hyperf 测试客户端。
+     * PHPUnit 10+ 构造只传 string $name,不再覆盖构造函数,改在 setUp 中创建。
      */
-    public function __construct($name = null, array $data = [], $dataName = '')
+    protected function setUp(): void
     {
-        parent::__construct($name, $data, $dataName);
+        parent::setUp();
         $this->client = make(Client::class);
     }
 

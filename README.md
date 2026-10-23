@@ -1,6 +1,6 @@
 # dleno/hyperf-diy
 
-`dleno/hyperf-diy` 是基于 Hyperf 3.1 和 `dleno/common-core` 的业务项目脚手架。它不是一个纯净 Hyperf 空项目，而是预置了 Dleno 项目常用的 HTTP、WebSocket、AMQP、AsyncQueue、Crontab、Model 分表、分布式锁、接口签名/加密、日志和测试示例。
+`dleno/hyperf-diy` 是基于 Hyperf 3.2 和 `dleno/common-core` 的业务项目脚手架。它不是一个纯净 Hyperf 空项目，而是预置了 Dleno 项目常用的 HTTP、WebSocket、AMQP、AsyncQueue、Crontab、Model 分表、分布式锁、接口签名/加密、日志和测试示例。
 
 项目定位：
 
@@ -11,9 +11,9 @@
 
 ## 环境要求
 
-- PHP `>= 8.1`
-- Swoole `>= 5.0`
-- Hyperf `~3.1`
+- PHP `>= 8.4`
+- Swoole `>= 6.2`
+- Hyperf `~3.2`
 - MySQL
 - Redis
 - WebSocket 功能要求 Redis `7.4+`，因为 common-core 的 WS 连接绑定和 presence 在线索引依赖 `HEXPIRE`
@@ -367,7 +367,7 @@ Crontab 调度进程由 common-core `ConfigProvider` 按 `ENABLE_CRONTAB` 自动
 
 日志配置入口：
 
-- `config/autoload/logger.php`：使用 common-core 的默认日志分组和 handler。
+- `config/autoload/logger.php`：使用 common-core 的默认日志分组和 handler（Hyperf 3.2 `default + channels` 结构）；自定义分组以参数传入 `LoggerConfig::getDefaultConfig([...])`，不要再与返回值顶层 `array_merge`，否则不会生效。
 - `config/autoload/dingtalk.php`：普通系统通知和异常追踪机器人配置，默认关闭。
 
 异常输出会读取 `dingtalk.trace` 指定的机器人配置；未配置、未启用或 token/secret 为空时不会发送通知。生产启用前应准备独立机器人密钥，并确认 Redis 可用，因为 DingTalk 发送频率限制使用 Redis pool。
@@ -567,6 +567,8 @@ composer cs-fix
 
 可按本地环境使用容器启动依赖。不同团队的本地 Docker 编排可能不同，使用前请确认 `.env.local` 中 MySQL / Redis / RabbitMQ 主机名和密码与容器一致。
 
+`.dockerignore` 会排除 `.env.local`（本地凭据）和本地 `composer.lock`（项目不提交锁文件，镜像内按 `composer.json` 重新解析）。生产凭据请通过运行时环境变量或 Secret 注入。
+
 ## 与 common-core 的关系
 
 `hyperf-diy` 负责“业务项目模板和接入示例”，`common-core` 负责“公共核心能力”。推荐边界：
@@ -595,6 +597,14 @@ composer update dleno/common-core -W
 composer analyse
 composer test
 ```
+
+从 3.1 升级到 3.2（Hyperf 3.2 / PHP 8.4 / Swoole 6.2）时，本地残留的 3.1 `composer.lock` 与新约束不兼容，需重新解析：
+
+```bash
+rm -f composer.lock && composer update -W
+```
+
+业务侧配置变更（logger / cache 结构、AsyncQueue 等）见 `dleno/common-core` README 的「从 3.1 升级」。
 
 ## 安全提示
 

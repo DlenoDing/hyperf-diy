@@ -7,7 +7,8 @@ namespace HyperfTest\Cases;
 use Dleno\CommonCore\Model\BaseModel;
 use Hyperf\Coroutine\Coroutine;
 use Hyperf\DbConnection\Db;
-use Hyperf\Testing\TestCase;
+use HyperfTest\TestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use Swoole\Coroutine\WaitGroup;
 
 use function Hyperf\Config\config;
@@ -55,8 +56,8 @@ class ShardTimeModel extends BaseModel
  *  7. isTableExistsError：精确识别 1050 / "already exists"
  *
  * @internal
- * @coversNothing
  */
+#[CoversNothing]
 class BaseModelSplitTableTest extends TestCase
 {
     private string $database;
@@ -87,8 +88,12 @@ class BaseModelSplitTableTest extends TestCase
      */
     protected function tearDown(): void
     {
-        $this->cleanTables();
-        parent::tearDown();
+        try {
+            $this->cleanTables();
+        } finally {
+            //清表失败(如数据库不可用)也必须执行父类 tearDown,否则 error handler 不还原、真实错误被 risky 掩盖
+            parent::tearDown();
+        }
     }
 
     /**

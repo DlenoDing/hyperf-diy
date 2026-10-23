@@ -9,9 +9,7 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
-return array_merge(
-    \Dleno\CommonCore\Logger\LoggerConfig::getDefaultConfig(),
-    [
-        //其他自定义配置
-    ]
-);
+//Hyperf 3.2 logger 结构:['default' => ..., 'channels' => [...]];自定义分组经参数传入(合并进 channels)。
+return \Dleno\CommonCore\Logger\LoggerConfig::getDefaultConfig([
+    //其他自定义分组
+]);

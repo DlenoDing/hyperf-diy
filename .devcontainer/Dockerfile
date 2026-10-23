@@ -5,7 +5,7 @@
 # @contact  group@hyperf.io
 # @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
 
-FROM hyperf/hyperf:8.3-alpine-v3.19-swoole
+FROM hyperf/hyperf:8.4-alpine-v3.22-swoole-v6.2
 LABEL maintainer="Hyperf Developers <group@hyperf.io>" version="1.0" license="MIT" app.name="Hyperf"
 
 ##
@@ -49,4 +49,4 @@ WORKDIR /opt/www
 COPY . /opt/www
 RUN composer install && php bin/hyperf.php
 
-EXPOSE 9501
+EXPOSE 9504 9505

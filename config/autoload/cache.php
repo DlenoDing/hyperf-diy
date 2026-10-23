@@ -12,11 +12,15 @@ declare(strict_types=1);
 use function Hyperf\Support\env;
 
 return [
-    //默认 Hyperf Cache 配置，使用 Redis 存储并按 APP_NAME 隔离 key namespace。
-    'default' => [
-        'driver' => Hyperf\Cache\Driver\RedisDriver::class,
-        'packer' => Hyperf\Codec\Packer\PhpSerializerPacker::class,
-        'prefix' => env('APP_NAME', 'Server-API').':CACHE:',
-        'skip_cache_results' => [],
+    //Hyperf 3.2 cache 结构:default 指向 stores 中的存储名。
+    'default' => env('CACHE_DRIVER', 'default'),
+    'stores'  => [
+        //默认 Hyperf Cache 配置，使用 Redis 存储并按 APP_NAME 隔离 key namespace。
+        'default' => [
+            'driver' => Hyperf\Cache\Driver\RedisDriver::class,
+            'packer' => Hyperf\Codec\Packer\PhpSerializerPacker::class,
+            'prefix' => env('APP_NAME', 'Server-API').':CACHE:',
+            'skip_cache_results' => [],
+        ],
     ],
 ];

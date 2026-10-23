@@ -11,6 +11,7 @@ use Hyperf\Process\ProcessManager;
 use Hyperf\Redis\Redis;
 
 use function Hyperf\Config\config;
+use function Hyperf\Coroutine\go;
 
 /**
  * 自定义 Process 示例。
@@ -37,6 +38,7 @@ class TestProcess extends AbstractProcess
      */
     public function handle(): void
     {
+        //Hyperf 协程函数:swoole.use_shortname=Off 时全局 go() 未定义
         go(function () {
             $i = 0;
             while (true) {

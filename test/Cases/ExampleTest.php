@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace HyperfTest\Cases;
 
-use Hyperf\Testing\TestCase;
+use HyperfTest\TestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
 /**
  * @internal
- * @coversNothing
  */
+#[CoversNothing]
 class ExampleTest extends TestCase
 {
     /**

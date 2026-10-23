@@ -8,7 +8,9 @@ services:
     volumes:
       - ./:/opt/www
     ports:
-      - 9501:9501
+      #与 .env 的 HTTP_PORT / WS_PORT 一致
+      - 9504:9504
+      - 9505:9505
     environment:
       - APP_ENV=dev
       - SCAN_CACHEABLE=false

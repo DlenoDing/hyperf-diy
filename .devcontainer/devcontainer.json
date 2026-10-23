@@ -3,5 +3,5 @@
         "context": "..",
         "dockerfile": "./Dockerfile"
     },
-    "forwardPorts": [9501]
+    "forwardPorts": [9504, 9505]
 }

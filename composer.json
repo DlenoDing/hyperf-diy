@@ -10,25 +10,25 @@
         "middleware"
     ],
     "description": "A coroutine framework that focuses on hyperspeed and flexible, specifically use for build microservices and middlewares.",
-    "license": "Apache-2.0",
+    "license": "MIT",
     "require": {
         "php": ">=8.4",
-        "ext-swoole": ">=6.0",
+        "ext-swoole": ">=6.2",
         "ext-json": "*",
-        "hyperf/framework": "~3.1.0",
-        "hyperf/crontab": "~3.1.0",
-        "hyperf/websocket-server": "~3.1.0",
-        "dleno/common-core": "~3.1.0"
+        "hyperf/framework": "~3.2.0",
+        "hyperf/crontab": "~3.2.0",
+        "hyperf/websocket-server": "~3.2.0",
+        "dleno/common-core": "~3.2.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.0",
-        "hyperf/devtool": "~3.1.0",
-        "hyperf/testing": "~3.1.0",
+        "hyperf/devtool": "~3.2.0",
+        "hyperf/testing": "~3.2.0",
         "mockery/mockery": "^1.0",
         "phpstan/phpstan": "^1.0",
-        "swoole/ide-helper": "^5.0",
+        "swoole/ide-helper": "^6.2",
         "squizlabs/php_codesniffer": "^3.5",
-        "hyperf/ide-helper": "~3.1.0"
+        "hyperf/ide-helper": "~3.2.0"
     },
     "suggest": {
         "ext-openssl": "Required to use HTTPS.",

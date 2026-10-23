@@ -6,7 +6,9 @@ services:
       - "APP_PROJECT=hyperf"
       - "APP_ENV=testing"
     ports:
-      - "9501:9501"
+      #端口由 .env* 中 HTTP_PORT / WS_PORT 决定,此处使用 config/autoload/server.php 的默认值
+      - "9504:9504"
+      - "9505:9505"
     deploy:
       replicas: 1
       restart_policy:
