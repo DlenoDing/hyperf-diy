@@ -5,7 +5,7 @@
 # @contact  group@hyperf.io
 # @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
 
-FROM hyperf/hyperf:8.4-alpine-v3.24-swoole-slim-v6.2.2
+FROM registry.cn-hongkong.aliyuncs.com/dleno-server/php:alp324-php84-sw6.2.3
 LABEL maintainer="Hyperf Developers <group@hyperf.io>" version="1.0" license="MIT" app.name="Hyperf"
 
 ##
@@ -47,7 +47,7 @@ WORKDIR /opt/www
 # RUN composer install --no-dev --no-scripts
 
 COPY . /opt/www
-RUN print "\n" | composer install -o && php bin/hyperf.php
+RUN composer install --no-dev -o --no-interaction && php bin/hyperf.php
 
 EXPOSE 9504 9505
 

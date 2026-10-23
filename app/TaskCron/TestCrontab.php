@@ -12,7 +12,7 @@ use function Hyperf\Support\env;
  *
  * 展示如何声明秒级定时任务和动态 enable 方法；当前默认关闭，避免脚手架启动后输出测试日志。
  */
-#[Crontab(name: "TestCrontab", rule: "*\/5 * * * * *", callback: "execute", enable:"isEnable")]
+#[Crontab(name: "TestCrontab", rule: '*/5 * * * * *', callback: "execute", enable:"isEnable")]
 class TestCrontab
 {
     /**
