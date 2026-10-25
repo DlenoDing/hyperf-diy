@@ -292,6 +292,8 @@ AMQP_PORT=5672
 AMQP_USER=admin
 AMQP_PASSWORD=admin
 AMQP_VHOST=/
+AMQP_HEARTBEAT=15
+AMQP_READ_WRITE_TIMEOUT=30
 ```
 
 说明：
@@ -299,6 +301,32 @@ AMQP_VHOST=/
 - `BaseProducer` / `BaseConsumer` 来自 common-core。
 - 两种延时实现：① 延迟交换机（x-delayed-message 插件，见「延时调用」）；② 死信交换机 + 消息 TTL + 队列 TTL（TTL 到期转死信，见「延时到死信调用」，不需插件）。生产者与消费者的 `delayExchange` 必须一致；TTL 延时缓冲队列必须无活跃消费者。
 - 延时插件方案需 RabbitMQ 安装 `rabbitmq_delayed_message_exchange` 插件；TTL+死信方案不需要插件。
+
+### 依赖版本快照（2026-10-25）
+
+本次已正常 Composer 更新全部依赖。直接依赖以当前PHP8.4/Swoole6.2可用的最新稳定版为下限，Hyperf保持3.2系列；composer outdated --direct 为空。
+
+| 依赖 | 已安装版本 |
+| --- | --- |
+| dleno/common-core | 3.2.5 |
+| hyperf/framework、crontab、devtool、testing、ide-helper | 3.2.0 |
+| hyperf/websocket-server | 3.2.1 |
+| friendsofphp/php-cs-fixer | 3.95.27 |
+| mockery/mockery | 1.6.15 |
+| phpstan/phpstan | 2.3.2 |
+| squizlabs/php_codesniffer | 4.0.4 |
+| swoole/ide-helper | 6.2.3 |
+
+PHPStan从1.x升到2.x、PHP_CodeSniffer从3.x升到4.x；现有项目静态分析配置、PHP语法、完整测试和路由加载已经验证，无需增加兼容补丁。间接依赖按上游支持的约束同步更新，不手动修改vendor。
+
+### common-core 3.2.5 接入
+
+- 本项目通过正常 Composer 使用正式包，不在 App 或 vendor 复制退出实现。依赖下限为3.2.5；既有项目执行 composer update dleno/common-core --with-all-dependencies。
+- 进程和停止信号由 common-core 自动注册；当前 processes.php、signal.php 不需追加相同项。server.php 继续使用框架 WorkerExitCallback 标识，由包依赖映射接入，无需改为 App 回调。
+- AMQP 配置帮助类的默认心跳15秒、读写超时30秒已经匹配；启用前不能把 AMQP_HEARTBEAT 设为0或空值。已有合法显式配置保留，AMQP 示例仍默认关闭。
+- MAX_COROUTINE 默认100000、MAX_WAIT_TIME 默认60，均保持不变。容器停止宽限仍应按任务实测配置，不能把心跳值或MAX_WAIT_TIME当作所有任务的十秒退出保证。
+- CommonCoreIntegrationTest 使用项目实际容器检查正式包、DI映射、注册和心跳校验，不访问RabbitMQ。原有锁、Model、HTTP测试继续保留。
+- composer.lock 当前按脚手架既有规则忽略；应用需要固定依赖时，应在自己的项目采用锁文件策略，本次不改变脚手架约定。
 
 ### Crontab / Process
 

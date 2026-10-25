@@ -35,8 +35,8 @@ return [
                         Event::ON_REQUEST => [Hyperf\HttpServer\Server::class, 'onRequest'],
                     ],
                     'settings'  => [
-                        //work达到此请求数量，进程关闭并重启(非特殊需求不建议设置)
-                        //内存溢出时可临时设置解决，但每次进程重启会导致正在执行的协程全部中断
+                        //达到此请求数量后触发worker轮换；默认0不按请求数轮换。
+                        //在途工作需由对应退出流程收尾，并配置足够的MAX_WAIT_TIME及容器停止宽限。
                         'max_request' => (int)env("MAX_REQUEST", 0),
                     ],
                     'options'   => [
